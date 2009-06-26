@@ -1,8 +1,6 @@
 ;;;
 ;;; Shared settings, etc. for XEmacs/Emacs
 ;;;
-;;; $Id: init.el,v 1.20 2009/03/27 01:18:15 lonstein Exp lonstein $
-;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
