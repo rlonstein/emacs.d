@@ -307,10 +307,19 @@ The value is an ASCII printing character (not upper case) or a symbol."
       cperl-indent-parens-as-block t
       cperl-tab-always-indent t)
 
+(setq javascript-indent-level 4)
+
 ;; tramp mode
 (autoload 'tramp "tramp-mode" nil t)
 (setq tramp-default-method "ssh")
 
+
+;; Steve Yegge's improved JavaScript mode
+(if (not +running-xemacs+)
+    (progn (autoload 'js2-mode "js2" nil t)
+           (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+           (setq js2-basic-offset 2)
+           (setq js2-use-font-lock-faces t)))
 ;;
 ;; Luke Gorrie's Chop -- interactive binary search for a line in a window
 ;;
@@ -620,6 +629,13 @@ The value is an ASCII printing character (not upper case) or a symbol."
        org-reverse-note-order t
        org-fast-tag-selection-single-key (quote expert)
        org-remember-store-without-prompt t
+       org-clock-persist t
+       org-clock-persist-file ".org-clock-save.el"
+       org-clock-in-resume t
+       org-clock-out-when-done t
+       org-clock-out-removes-zero-time-clocks t
+       org-clock-in-switch-to-state "STARTED"
+       org-clock-out-when-done t
        org-log-done '(state))
 
       (setf org-agenda-custom-commands
@@ -641,8 +657,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
                       (org-agenda-overriding-header "Unscheduled TODO entries: "))))))
 
       (setf org-remember-templates
-            (quote ((116 "* TODO %?\n  %u" "~/Documents/todo/todo.org" "Tasks")
-                    (110 "* %u %?" "~/Documents/todo/notes.org" "Notes"))))
+            (quote (("Todo" ?t "* TODO %?\n  %u" "~/Documents/todo/todo.org" "Tasks")
+                    ("Note" ?n "* %u %?" "~/Documents/todo/notes.org" "Notes"))))
       (setf remember-annotation-functions (quote (org-remember-annotation))
             remember-handler-functions (quote (org-remember-handler)))
       
@@ -935,7 +951,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
   (remassoc ?\{ myskeleton-pairs)
   (add-to-list 'myskeleton-pairs '(?{ . (?{ ?} ?{ '(progn (indent-according-to-mode) nil) \n _ \n ?} '(progn (indent-according-to-mode) nil)))))
 
-(add-hook 'c-mode-hook 'my-skelpair-cmode)
+;(add-hook 'c-mode-hook 'my-skelpair-cmode)
 
 (define-key global-map (kbd "C-M-{") 'backward-paragraph)
 (define-key global-map (kbd "C-M-}") 'forward-paragraph)
