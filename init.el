@@ -14,16 +14,16 @@
 (setq message-log-max 1000)
 
 ;; know where we're running, though (featurep 'xemacs) is better 
-(defvar +running-xemacs+  (string-match "XEmacs\\|Lucid" emacs-version)) 
-(defvar +running-osx+     (equal 'darwin system-type)) 
-(defvar +running-windows+ (equal 'windows system-type)) 
-(defvar +running-bsd+     (equal 'berkeley-unix system-type)) 
-(defvar +is-employer-host+ (cond 
+(defconst +running-xemacs+  (string-match "XEmacs\\|Lucid" emacs-version)) 
+(defconst +running-osx+     (equal 'darwin system-type)) 
+(defconst +running-windows+ (equal 'windows system-type)) 
+(defconst +running-bsd+     (equal 'berkeley-unix system-type)) 
+(defconst +is-employer-host+ (cond 
 			    ((file-directory-p (expand-file-name "/ms/dev/")) t)
 			    (+running-osx+ nil) 
 			    (t nil)))
  
-(defvar +homedir+ (expand-file-name "~")) ; there's no place like $HOME 
+(defconst +homedir+ (expand-file-name "~")) ; there's no place like $HOME 
 
 (defconst +local-elisp-subpath+
    (concat +homedir+ (cond (+is-employer-host+ (if +running-windows+ "/elisp") "/.custom/elisp")
@@ -31,6 +31,48 @@
                            (+running-windows+  "C:/emacsen")
                            (+running-osx+      "/Library/Application Support/emacsen")
                            (t                  "/emacsen"))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Compatibility hacks, preferred or needed for various before
+;; loading. YMMV.
+;;
+
+;; Use Common Lisp. Default in XEmacs, deprecated in GNUEmacs. I think
+;; RMS is wrong on this.
+(if (not +running-xemacs+) (require 'cl))
+
+;; compatibility with XEmacs, from Lucid Emacs
+;; I use this in myskeleton-pairs below...
+(if (not +running-xemacs+)
+    (defun event-key (event)
+      "Returns the KeySym of the given key-press event.
+The value is an ASCII printing character (not upper case) or a symbol."
+      (if (symbolp event)
+          (car (get event 'event-symbol-elements))
+        (let ((base (logand event (1- (lsh 1 18)))))
+          (downcase (if (< base 32) (logior base 64) base))))))
+
+;; Not defined in Emacs < 21.3.
+(unless (commandp 'find-library)
+  (defun find-library (library)
+    "Open LIBRARY."
+    (interactive "sLibrary: ")
+    (let ((filename (locate-library (concat library ".el"))))
+      (if (stringp filename)
+          (find-file filename)
+        (message "Library %s not found." library)))))
+
+;; Network coding system fix for XEmacs 21.5... by default, it does 
+;; CR/LF conversion on network streams, which breaks IMAP and 
+;; potentially other protocols, thanks Ron Isaacson
+(when +running-xemacs+
+  (when (boundp 'default-network-coding-system) 
+    (setq default-network-coding-system '(no-conversion))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 (defun localize-load-path (subpath)
   "Return path below local elisp path for subpath"
@@ -93,119 +135,6 @@
 			    "~/emacsen/modules/org/contrib/lisp"))))) 
   (dolist (p my-path-list) (add-to-load-path p)))
 
-(when (and +is-employer-host+ +running-xemacs+) 
-  (progn 
-    (require 'mspackage) 
-    ; prereqs for emacs-w3m 
-    (mspackage-add-package "xemacs/flim/1.14.7") 
-    (mspackage-add-package "xemacs/semi/1.14.6") 
-    (mspackage-add-package "xemacs/apel/10.6.0") 
-    (mspackage-add-package "xemacs/wl/2.14.0") 
-    (mspackage-add-package "xemacs/emacs-w3m/1.4.4"))) 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Compatibility hacks, preferred or needed for various before
-;; loading. YMMV.
-;;
-
-;; Use Common Lisp. Default in XEmacs, deprecated in GNUEmacs. I think
-;; RMS is wrong on this.
-(if (not +running-xemacs+) (require 'cl))
-
-;; compatibility with XEmacs, from Lucid Emacs
-;; I use this in myskeleton-pairs below...
-(if (not +running-xemacs+)
-    (defun event-key (event)
-      "Returns the KeySym of the given key-press event.
-The value is an ASCII printing character (not upper case) or a symbol."
-      (if (symbolp event)
-          (car (get event 'event-symbol-elements))
-        (let ((base (logand event (1- (lsh 1 18)))))
-          (downcase (if (< base 32) (logior base 64) base))))))
-
-;; Not defined in Emacs < 21.3.
-(unless (commandp 'find-library)
-  (defun find-library (library)
-    "Open LIBRARY."
-    (interactive "sLibrary: ")
-    (let ((filename (locate-library (concat library ".el"))))
-      (if (stringp filename)
-          (find-file filename)
-        (message "Library %s not found." library)))))
-
-;; Network coding system fix for XEmacs 21.5... by default, it does 
-;; CR/LF conversion on network streams, which breaks IMAP and 
-;; potentially other protocols, thanks Ron Isaacson
-(when +running-xemacs+
-  (when (boundp 'default-network-coding-system) 
-    (setq default-network-coding-system '(no-conversion))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Fiddle with local modules and paths
-;; 
-
-;;
-;; hackery, I want to turn on and off individual modules in one place.
-;; Set up alist of local module structs indexed by module name.
-;;
-(defstruct module
-  (name :type string)
-  (load t :type boolean)
-  (path nil :type string)    ; path or path fragment
-  (relative t :type boolean) ; not relative to home elisp dir
-  (exec nil :type sexp))
-
-(defmacro new-module-entry (&rest args)
-  `(let* ((g (gensym))
-          (g (make-module ,@args)))
-     (cons (module-name g) g)))
-
-(defvar local-modules
-  `( ,(new-module-entry :name "modules"    :path "/modules")
-     ,(new-module-entry :name "misc"       :path "/misc")
-     ,(new-module-entry :name "remember"   :path "/modules/remember")
-     ,(new-module-entry :name "muse"       :path "/modules/muse/lisp")
-     ,(new-module-entry :name "org"        :path "/modules/org")
-     ,(new-module-entry :name "org-xemacs" :load +running-xemacs+  :path "/modules/org/xemacs" :exec '(lambda () (require 'noutline)))
-     ,(new-module-entry :name "slime"    :path "/modules/slime")
-     ,(new-module-entry :name "/opt/local/share/emacs" :load +running-osx+ :path "/opt/local/share/emacs/" :relative nil)))
-
-(defun local-module-enabled-p (name)
-  (when (assoc name local-modules) (module-load (cdr (assoc name local-modules)))))
-
-(defun add-to-load-path (path-string)
-  (message (format "Checking %S..." path-string))
-  (if (stringp path-string)
-      (if (file-exists-p path-string)
-	  (progn
-	    (message (format "Adding %S to load-path..." path-string))
-	    (add-to-list 'load-path (expand-file-name path-string)))
-	(message (format "Skipping %S, path not found" path-string)))
-    (message (format "Skipping %s, not a string" path-string))))
- 
-
-;;
-;; Ok, now load 'em up
-;;
-(dolist (entry local-modules)
-  (when entry 
-    (let ((m (cdr entry)))
-      (when (and m (module-load m))
-	(progn
-	  (add-to-load-path
-           (if (module-relative m) (localize-load-path (module-path m))
-             (module-path m)))
-	  (when (module-exec m) (funcall (module-exec m))))))))
-
-(message "Done tinkering with loadpath...")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -223,11 +152,23 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+ 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; some useful local functions, moved to their own file
+;;
+(message "... defining local functions and customizations...")
+(load-file (concat +local-elisp-subpath+ "/rel-module.el"))
+(load-file (concat +local-elisp-subpath+ "/rel-module-cfg.el"))
+(load-file (concat +local-elisp-subpath+ "/rel-lib.el"))
+(load-file (concat +local-elisp-subpath+ "/misc/lazycat.el"))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Jari's Tiny Tools package has great stuff! Explore a bit more...
 ;;
-(when (local-module-enabled-p "tiny-tools")
+(when (rel-local-module-enabled-p "tiny-tools")
   (if (not +is-employer-host+) ; for some reason doesn't play well with others, too lazy to fix
       (progn 
         (setq tinypath-:compression-support "all")
@@ -490,7 +431,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;;
 ;; note, using SLIME from CVS after refactoring
 ;;
-(when (local-module-enabled-p "slime")
+(when (rel-local-module-enabled-p "slime")
 
   (require 'clojure-mode)
   (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
@@ -603,7 +544,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;;
 ;; Org Mode, proving to be better than planner
 ;;
-(when (local-module-enabled-p "org")
+(when (rel-local-module-enabled-p "org")
   (require 'org-install)
   (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
   (eval-after-load "org"
@@ -852,13 +793,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
                     (concat "Saved as script: " buffer-file-name)))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; some useful local functions, moved to their own file
-;;
-(message "... defining local functions and customizations...")
-(load-file (concat +local-elisp-subpath+ "/rel-lib.el"))
-(load-file (concat +local-elisp-subpath+ "/misc/lazycat.el"))
 
 ;;
 ;; Phil Moore's suggestion for annoying suspends & my addition for
@@ -993,7 +927,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;; Drew Adams amazing, hairy completion stuff, too early to say if I
 ;; like it...
 ;;
-(if (local-module-enabled-p "icicles")
+(if (rel-local-module-enabled-p "icicles")
     (require 'icicles))
 
 ;;
