@@ -101,15 +101,12 @@ The value is an ASCII printing character (not upper case) or a symbol."
                                         "/Users/lonstein/Library/Application Support/emacsen/misc" 
                                         "/Users/lonstein/Library/Application Support/emacsen/modules" 
                                         "/Users/lonstein/Library/Application Support/emacsen/sourceforge" 
-                                        "/Users/lonstein/Library/Application Support/emacsen/modules/slime" 
-
                                         "/Users/lonstein/clojure/"
                                         "/Users/lonstein/clojure/swank"
                                         "/Users/lonstein/clojure/swank-clojure"
                                         "/Users/lonstein/clojure/slime"
                                         "/Users/lonstein/clojure/slime/contrib"
 
-					"/Users/lonstein/Library/Application Support/emacsen/modules/slime/contrib"
                                         "/Users/lonstein/Library/Application Support/emacsen/modules/remember"
 
                                         "/Users/lonstein/Library/Application Support/emacsen/modules/org/lisp" 
@@ -424,119 +421,19 @@ The value is an ASCII printing character (not upper case) or a symbol."
          "skeletons"))
 
 
+;
+; paredit aids structured editing of sexps
+;
+;(require 'paredit)
+(load "paredit-beta.el")
+(mapc (lambda (hook) (add-hook hook (lambda () (paredit-mode +1))))
+      '(lisp-mode-hook
+        emacs-lisp-mode-hook
+        scheme-mode-hook
+        slime-mode-hook
+        slime-repl-mode-hook
+        t-mode-hook))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; set up slime and lisp
-;;
-;; note, using SLIME from CVS after refactoring
-;;
-(when (rel-local-module-enabled-p "slime")
-
-  (require 'clojure-mode)
-  (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
-
-  (setq swank-clojure-jar-path "/Users/lonstein/clojure/clojure/clojure.jar")
-  (setq swank-java-path "/usr/bin/java")
-  (setq swank-clojure-binary "/Users/lonstein/clojure/clojure.sh")
-  (require 'swank-clojure)
-
-;;FIXME
-;;  (setq slime-lisp-implementations '((clojure ( "/Users/lonstein/clojure/clojure")) 
-;;                                     (sbcl ,(list (cond (+running-osx+ "/opt/local/bin/sbcl")
-;;                                                        (+is-employer-host+ "/ms/dist/fsf/PROJ/sbcl/1.0.25/bin/sbcl"))
-;;                                                   (t nil)))))
-
-(setq slime-lisp-implementations
-      '((sbcl ("/opt/local/bin/sbcl"))
-        (clozure ("/Users/lonstein/clozure-1.3/scripts/ccl")) ;FIXME
-        (clojure ("/Users/lonstein/clojure/clojure.sh")  :init swank-clojure-init)))
-
-  ;; fixme... localize for platform, etc.
-  (require 'slime-autoloads)
-  (require 'slime)
-  (require 'slime-fancy)
-  (require 'slime-banner)
-  (require 'slime-asdf)
-  (require 'slime-indentation)
-  (slime-banner-init)
-  (slime-asdf-init)
-  (setq slime-complete-symboll*-fancy t)
-  (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
-  (slime-setup)
-
-  (add-hook 'lisp-mode-hook (lambda () (slime-mode t)
-                              (local-set-key "\r" 'newline-and-indent)
-                              (setq lisp-indent-function 'common-lisp-indent-function)
-                              (setq indent-tabs-mode nil)))
-
-  (setq common-lisp-hyperspec-root
-        (cond (+running-osx+ "file:///usr/local/share/HyperSpec-7-0/HyperSpec/")
-              (+running-bsd+ "file:///usr/local/share/doc/clisp-hyperspec/HyperSpec/")
-              ;(+is-employer-host+ "http://www.lispworks.com/documentation/HyperSpec/")
-              (t "http://www.lispworks.com/documentation/HyperSpec/")))
-
-  (when (and common-lisp-hyperspec-root (load "w3m-load" t))
-    (progn (defun w3m-browse-url-other-window (url &optional newwin)
-             "Thanks to Hakon Alstadheim in slime-devel 20040714"
-             (interactive
-              (browse-url-interactive-arg "w3m URL: "))
-             (let ((pop-up-frames nil))
-               (switch-to-buffer-other-window
-                (w3m-get-buffer-create "*w3m*"))
-               (w3m-browse-url url)))
-           (setq browse-url-browser-function
-                 (list (cons "^ftp:/.*" (lambda (url &optional nf)
-                                          (call-interactively #'find-file-at-point url)))
-                       (cons "." #'w3m-browse-url-other-window)))))
-
-
-  ;
-  ; paredit aids structured editing of sexps
-  ;
-  ;(require 'paredit)
-  (load "paredit-beta.el")
-  (mapc (lambda (hook) (add-hook hook (lambda () (paredit-mode +1))))
-        '(lisp-mode-hook
-          emacs-lisp-mode-hook
-          scheme-mode-hook
-          slime-mode-hook
-          slime-repl-mode-hook
-          t-mode-hook))
-  ;; check this... are these necessary or does the mode hook do it
-;; (define-key slime-mode-map (kbd "(") 'paredit-open-parenthesis)
-;;   (define-key slime-mode-map (kbd ")") 'paredit-close-parenthesis)
-;;   (define-key slime-mode-map (kbd "\"") 'paredit-doublequote)
-;;   (define-key slime-mode-map (kbd "\\") 'paredit-backslash)
-;;   (define-key slime-mode-map (kbd "RET") 'paredit-newline)
-;;   (define-key slime-mode-map (kbd "<return>") 'paredit-newline)
-;;   (define-key slime-mode-map (kbd "C-d") 'paredit-forward-delete)
-;;   (define-key slime-mode-map (kbd "C-M-k") 'paredit-kill)
-;;   (define-key slime-mode-map (kbd "C-'") 'paredit-splice-sexp)
-;;   (define-key slime-mode-map (kbd "C-M-l") 'paredit-recentre-on-sexp)
-
-   (define-key slime-mode-map (kbd "C-,") 'paredit-backward-slurp-sexp)
-   (define-key slime-mode-map (kbd "C-.") 'paredit-forward-slurp-sexp)
-   (define-key slime-mode-map (kbd "C-<") 'paredit-backward-barf-sexp)
-   (define-key slime-mode-map (kbd "C->") 'paredit-forward-barf-sexp)
-
-   (define-key slime-repl-mode-map (kbd "C-,") 'paredit-backward-slurp-sexp)
-   (define-key slime-repl-mode-map (kbd "C-.") 'paredit-forward-slurp-sexp)
-   (define-key slime-repl-mode-map (kbd "C-<") 'paredit-backward-barf-sexp)
-   (define-key slime-repl-mode-map (kbd "C->") 'paredit-forward-barf-sexp)
-
-;;   (define-key slime-mode-map (kbd "C-j") 'newline)
-;;   (define-key slime-mode-map (kbd "C-t") 'transpose-sexps)
-;;   (define-key slime-mode-map (kbd "C-M-t") 'transpose-chars)
-;;   (define-key slime-mode-map (kbd "C-n") 'forward-sexp)
-;;   (define-key slime-mode-map (kbd "C-/") 'backward-up-list)
-;;   (define-key slime-mode-map (kbd "C-=") 'down-list)
-;;   (define-key slime-mode-map (kbd "TAB") 'slime-indent-and-complete-symbol)
-;;   (define-key slime-mode-map (kbd "C-c TAB") 'slime-complete-form)
-;;   (define-key slime-mode-map "\C-c;" 'slime-insert-balanced-comments)
-;;   (define-key slime-mode-map "\C-c\M-;" 'slime-remove-balanced-comments)
-
-  (message "... set up slime..."))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 

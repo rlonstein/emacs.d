@@ -1,11 +1,33 @@
+(message "Starting rel-module-cfg...")
+
 (setq rel-local-modules
-  `( ,(rel-new-module-entry :name "modules"    :path "/modules")
-     ,(rel-new-module-entry :name "misc"       :path "/misc")
-     ,(rel-new-module-entry :name "remember"   :path "/modules/remember")
-     ,(rel-new-module-entry :name "org"        :path "/modules/org")
-     ,(rel-new-module-entry :name "org-xemacs" :load +running-xemacs+  :path "/modules/org/xemacs" :exec '(lambda () (require 'noutline)))
-     ,(rel-new-module-entry :name "slime"    :path "/modules/slime")
-     ,(rel-new-module-entry :name "/opt/local/share/emacs" :load +running-osx+ :path "/opt/local/share/emacs/" :relative nil)))
+  `( 
+    ,(rel-new-module-entry
+      :name "modules"
+      :path "/modules")
+    ,(rel-new-module-entry
+      :name "misc"
+      :path "/misc")
+    ,(rel-new-module-entry
+      :name "remember"
+      :path "/modules/remember")
+    ,(rel-new-module-entry
+      :name "org"
+      :path "/modules/org")
+    ,(rel-new-module-entry
+      :name "org-xemacs"
+      :load +running-xemacs+
+      :path "/modules/org/xemacs"
+      :exec '(lambda () (require 'noutline)))
+    ,(rel-new-module-entry
+      :name "slime"
+      :path "/modules/slime"
+      :exec '(lambda () (load-file (localize-load-path "/rel-slime-cfg.el"))))
+    ,(rel-new-module-entry
+      :name "/opt/local/share/emacs"
+      :load +running-osx+
+      :path "/opt/local/share/emacs/"
+      :relative nil)))
 
 
 ;;
@@ -21,4 +43,4 @@
              (rel-module-path m)))
 	  (when (rel-module-exec m) (funcall (rel-module-exec m))))))))
 
-(message "Done tinkering with loadpath...")
+(message "Done with rel-module-cfg...")
