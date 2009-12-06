@@ -1,3 +1,8 @@
+;;
+;; (c) 2009, R. Lonstein
+;; http://creativecommons.org/licenses/MIT/
+;;
+
 (require 'clojure-mode)
 (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
 (setq swank-clojure-jar-path "/Users/lonstein/clojure/clojure/clojure.jar")
@@ -6,7 +11,7 @@
 (require 'swank-clojure)
 (setq slime-lisp-implementations
       '((sbcl ("/opt/local/bin/sbcl"))
-        (clozure ("/Users/lonstein/clozure-1.3/scripts/ccl")) ;FIXME
+        (clozure ("/Users/lonstein/clozure-1.4/scripts/ccl"))
         (clojure ("/Users/lonstein/clojure/clojure.sh")  :init swank-clojure-init)))
 ;; fixme... localize for platform, etc.
 (require 'slime-autoloads)

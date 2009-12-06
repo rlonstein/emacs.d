@@ -117,12 +117,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
                                           "C:\elisp\sourceforge" 
                                           "C:\elisp\packages\remember")) 
                        (t '("~/emacsen"
-                            "~/emacsen/share/emacs/site-lisp/"
-                            "~/emacsen/share/emacs/site-lisp/apel"
-                            "~/emacsen/share/emacs/site-lisp/emu"
-                            "~/emacsen/share/emacs/site-lisp/flim"
-                            "~/emacsen/share/emacs/site-lisp/semi"
-                            "~/emacsen/share/emacs/site-lisp/wl"
                             "~/emacsen/misc"
 			    "~/emacsen/modules"
                             "~/emacsen/modules/slime" 
@@ -141,10 +135,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
   (progn
     (when (load "mspackage" t)
       (message "Adding mspackages...")
-      (mspackage-add-package "xemacs/flim/1.14.7") 
-      (mspackage-add-package "xemacs/semi/1.14.6") 
-      (mspackage-add-package "xemacs/apel/10.6.0") 
-      (mspackage-add-package "xemacs/wl/2.12.2") 
       (mspackage-add-package "xemacs/emacs-w3m/1.4.4"))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -924,18 +914,13 @@ The value is an ASCII printing character (not upper case) or a symbol."
           (message "... set OSX default face...")))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(autoload 'wl "wl" "Wanderlust" t)
-(autoload 'wl-other-frame "wl" "Wanderlust on new frame." t)
-(autoload 'wl-draft "wl-draft" "Write draft with Wanderlust." t)
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (when +running-xemacs+ (gnuserv-start))
 
 (garbage-collect)
 
-;(setq debug-on-error nil)
+(when debug-on-error
+  (setq debug-on-error nil))
 
 (message "Completed load of Ross's customizations.")
 
@@ -945,3 +930,15 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;;;
 ;;; END OF MY CUSTOMIZATIONS
 ;;;
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(canlock-password "7c4828a8ed8cb623e5bf4491cc55848b5a3946ec"))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )

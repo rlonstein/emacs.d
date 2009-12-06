@@ -1,3 +1,8 @@
+;;
+;; (c) 2009, R. Lonstein
+;; http://creativecommons.org/licenses/MIT/
+;;
+
 (message "Starting rel-module-cfg...")
 
 (setq rel-local-modules

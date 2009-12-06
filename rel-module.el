@@ -1,3 +1,8 @@
+;;
+;; (c) 2009, R. Lonstein
+;; http://creativecommons.org/licenses/MIT/
+;;
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Fiddle with local modules and paths. I want to toggle individual

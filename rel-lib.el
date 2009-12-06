@@ -1,7 +1,9 @@
 ;;;
 ;;; refactoring init.el, various useful functions
 ;;;
-;;; $Id: rel-lib.el,v 1.2 2009/01/15 13:20:32 lonstein Exp lonstein $
+;;;
+;;; (c) 2009, R. Lonstein
+;;; http://creativecommons.org/licenses/MIT/
 ;;;
 
 (defun match-paren (arg)
