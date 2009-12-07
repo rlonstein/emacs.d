@@ -402,15 +402,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
                                          try-complete-lisp-symbol))
 (setq hippie-expand-verbose t) ; note which function used to try
 
-;; bring on my code skeletons
-(load
- (concat +homedir+
-         (cond (+is-employer-host+ "/.custom/")
-               (+running-osx+      "/Library/Application Support/emacsen/")
-	       (t "/emacsen/"))
-         "skeletons"))
-
-
 ;
 ; paredit aids structured editing of sexps
 ;
