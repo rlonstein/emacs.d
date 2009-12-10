@@ -26,12 +26,14 @@
 (defconst +homedir+ (expand-file-name "~")) ; there's no place like $HOME 
 
 (defconst +local-elisp-subpath+
-   (concat +homedir+ (cond (+is-employer-host+ (if +running-windows+ "/elisp") "/.custom/elisp")
-                           (+running-bsd+      "/emacsen")
-                           (+running-windows+  "C:/emacsen")
-                           (+running-osx+      "/Library/Application Support/emacsen")
-                           (t                  "/emacsen"))))
+  (concat +homedir+ "/" 
+          (cond (+is-employer-host+ 
+                 (if +running-windows+ "elisp") "/.custom/elisp")
+                (+running-bsd+      ".emacs.d")
+                (+running-osx+      ".emacs.d")
+                (t                  "emacsen"))))
 
+(defconst +init-file-path+ (file-name-directory user-init-file))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -73,17 +75,17 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-(defun localize-load-path (subpath)
-  "Return path below local elisp path for subpath"
-  (concat +local-elisp-subpath+ subpath))
-
 (defun add-to-load-path (path-string) 
   (message (format "Passed %S..." path-string)) 
   (if (stringp path-string) 
       (when (file-exists-p path-string) 
         (message (format "Adding %S to load-path..." path-string)) 
         (add-to-list 'load-path (expand-file-name path-string))))) 
+
+(add-to-load-path +init-file-path+)
+
+(load "rel-load")
+(rel-load-dir-contents (concat (file-name-as-directory +init-file-path+) "rel-modules"))
 
 (let ((my-path-list (cond (+is-employer-host+ '("~/.custom/" 
                                            "~/.custom/elisp" 
@@ -297,10 +299,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (when (not +running-xemacs+)
   (global-font-lock-mode 1))
 
-(defun add-to-hook (hook-name f)
-  (unless (and (symbol-value hook-name) (member hook-name f))
-    (add-hook (intern hook-name) f)))
-
 ;(dolist (hook-name '("c-mode-hook" "emacs-lisp-mode-hook" "dired-mode-hook"
 ;                     "mail-mode-hook" "ksh-mode-hook" "perl-mode-hook"
 ;                     "lisp-mode-hook" "html-mode-hook" "sql-mode-hook"))
@@ -414,6 +412,11 @@ The value is an ASCII printing character (not upper case) or a symbol."
         slime-mode-hook
         slime-repl-mode-hook
         t-mode-hook))
+
+; and ElDoc for hints
+(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -672,24 +675,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 
 
-;;
-;; Phil Moore's suggestion for annoying suspends & my addition for
-;; equally annoying exits
-;;
-(defun my-suspend-emacs ()
-  (interactive)
-  (if (yes-or-no-p "Do you want to suspend ")
-      (suspend-emacs)))
-
-(defun my-exit-emacs ()
-  (interactive)
-  (if (yes-or-no-p "Are you sure want to exit ")
-      (save-buffers-kill-emacs)))
-
-(global-set-key "\C-z"     'my-suspend-emacs)
-(global-set-key "\C-x\C-z" 'my-suspend-emacs)
-(global-set-key "\C-x\C-c" 'my-exit-emacs)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;
 ;; Drew Adams's suggestion
@@ -917,19 +902,3 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 ; educate me
 (totd)
-
-;;;
-;;; END OF MY CUSTOMIZATIONS
-;;;
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(canlock-password "7c4828a8ed8cb623e5bf4491cc55848b5a3946ec"))
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- )

@@ -6,7 +6,8 @@
 ;; http://creativecommons.org/licenses/MIT/
 ;;
 
-(require 'cl)
+(eval-when-compile
+  (require 'cl))     ; because I like CL's LOOP macro...
 
 (defvar rel-sigfile "~/.sigs")
 
@@ -38,3 +39,5 @@
   (save-excursion
     (goto-char (point-max))
     (insert "--\n" (rel-pick-fortune))))
+
+(provide 'rel-sig)
