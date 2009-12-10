@@ -787,13 +787,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
   (insert (format-time-string "%a, %d %b %y %H:%M\n")))
 
 ;;
-;; Drew Adams amazing, hairy completion stuff, too early to say if I
-;; like it...
-;;
-(if (rel-local-module-enabled-p "icicles")
-    (require 'icicles))
-
-;;
 ;; conveniences from Alex Schroeder
 ;;
 (defun url-encode (str)
