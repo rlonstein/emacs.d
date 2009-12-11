@@ -15,7 +15,8 @@
 
 ;; know where we're running, though (featurep 'xemacs) is better 
 (defconst +running-xemacs+  (string-match "XEmacs\\|Lucid" emacs-version)) 
-(defconst +running-osx+     (equal 'darwin system-type)) 
+(defconst +running-osx+     (equal 'darwin system-type))
+(defconst +running-carbon-emacs+ (featurep 'mac-carbon))
 (defconst +running-windows+ (equal 'windows system-type)) 
 (defconst +running-bsd+     (equal 'berkeley-unix system-type)) 
 (defconst +is-employer-host+ (cond 
@@ -75,7 +76,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defun add-to-load-path (path-string) 
+(defun add-to-load-path (path-string)
   (message (format "Passed %S..." path-string)) 
   (if (stringp path-string) 
       (when (file-exists-p path-string) 
@@ -709,11 +710,13 @@ The value is an ASCII printing character (not upper case) or a symbol."
       nil t))
 
 (if +running-osx+
-    (let ((preferred-font "-apple-envy code r-medium-r-normal--13-130-72-72-m-130-iso10646-1"))
+    (let ((preferred-font
+           (if +running-carbon-emacs+ "-apple-envy code r-medium-r-normal--13-130-72-72-m-130-iso10646-1"
+             "-apple-Envy_Code_R-medium-normal-normal-*-13-*-*-*-m-0-fontset-auto7")))
       (when (font-existp preferred-font)
         (progn
           (set-face-font 'default preferred-font)
-          (message "... set OSX default face...")))))
+          (message "... set OSX default face to [%s]..." preferred-font)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
