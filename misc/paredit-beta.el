@@ -60,7 +60,7 @@
 ;;; Toggle Paredit Mode with `M-x paredit-mode RET', or enable it
 ;;; always in a major mode `M' (e.g., `lisp' or `scheme') with:
 ;;;
-;;;   (add-hook M-mode-hook (lambda () (paredit-mode +1)))
+;;;   (add-hook M-mode-hook 'enable-paredit-mode)
 ;;;
 ;;; Customize paredit using `eval-after-load':
 ;;;
@@ -239,6 +239,11 @@ Signal an error if no clause matches."
 ;;;###autoload
 (define-minor-mode paredit-mode
   "Minor mode for pseudo-structurally editing Lisp code.
+With a prefix argument, enable Paredit Mode even if there are
+  imbalanced parentheses in the buffer.
+Paredit behaves badly if parentheses are imbalanced, so exercise
+  caution when forcing Paredit Mode to be enabled, and consider
+  fixing imbalanced parentheses instead.
 \\<paredit-mode-map>"
   :lighter " Paredit"
   ;; If we're enabling paredit-mode, the prefix to this code that
@@ -257,19 +262,13 @@ Signal an error if no clause matches."
             (error (setq paredit-mode nil)
                    (signal (car condition) (cdr condition)))))))
 
-;;; Old functions from when there was a different mode for emacs -nw.
-
 (defun enable-paredit-mode ()
-  "Turn on pseudo-structural editing of Lisp code.
-
-Deprecated: use `paredit-mode' instead."
+  "Turn on pseudo-structural editing of Lisp code."
   (interactive)
   (paredit-mode +1))
 
 (defun disable-paredit-mode ()
-  "Turn off pseudo-structural editing of Lisp code.
-
-Deprecated: use `paredit-mode' instead."
+  "Turn off pseudo-structural editing of Lisp code."
   (interactive)
   (paredit-mode -1))
 
@@ -781,7 +780,10 @@ If such a comment exists, delete the comment (including all leading
        (memq (char-syntax (if endp (char-after) (char-before)))
              (list ?w ?_ ?\"
                    (let ((matching (matching-paren delimiter)))
-                     (and matching (char-syntax matching)))))))
+                     (and matching (char-syntax matching)))
+                   (and (not endp)
+                        (eq ?\" (char-syntax delimiter))
+                        ?\) )))))
 
 (defun paredit-move-past-close-and-reindent (close)
   (let ((open (paredit-missing-close)))
@@ -792,30 +794,29 @@ If such a comment exists, delete the comment (including all leading
               (insert close))
             (error "Mismatched missing closing delimiter: %c ... %c"
                    open close))))
-  (let ((orig (point)))
-    (up-list)
-    (if (catch 'return                  ; This CATCH returns T if it
-          (while t                      ; should delete leading spaces
-            (save-excursion             ; and NIL if not.
-              (let ((before-paren (1- (point))))
-                (back-to-indentation)
-                (cond ((not (eq (point) before-paren))
-                       ;; Can't call PAREDIT-DELETE-LEADING-WHITESPACE
-                       ;; here -- we must return from SAVE-EXCURSION
-                       ;; first.
-                       (throw 'return t))
-                      ((save-excursion (forward-line -1)
-                                       (end-of-line)
-                                       (paredit-in-comment-p))
-                       ;; Moving the closing delimiter any further
-                       ;; would put it into a comment, so we just
-                       ;; indent the closing delimiter where it is and
-                       ;; abort the loop, telling its continuation that
-                       ;; no leading whitespace should be deleted.
-                       (lisp-indent-line)
-                       (throw 'return nil))
-                      (t (delete-indentation)))))))
-        (paredit-delete-leading-whitespace))))
+  (up-list)
+  (if (catch 'return                    ; This CATCH returns T if it
+        (while t                        ; should delete leading spaces
+          (save-excursion               ; and NIL if not.
+            (let ((before-paren (1- (point))))
+              (back-to-indentation)
+              (cond ((not (eq (point) before-paren))
+                     ;; Can't call PAREDIT-DELETE-LEADING-WHITESPACE
+                     ;; here -- we must return from SAVE-EXCURSION
+                     ;; first.
+                     (throw 'return t))
+                    ((save-excursion (forward-line -1)
+                                     (end-of-line)
+                                     (paredit-in-comment-p))
+                     ;; Moving the closing delimiter any further
+                     ;; would put it into a comment, so we just
+                     ;; indent the closing delimiter where it is and
+                     ;; abort the loop, telling its continuation that
+                     ;; no leading whitespace should be deleted.
+                     (lisp-indent-line)
+                     (throw 'return nil))
+                    (t (delete-indentation)))))))
+      (paredit-delete-leading-whitespace)))
 
 (defun paredit-missing-close ()
   (save-excursion
@@ -984,6 +985,7 @@ If the point is in a string or a comment, fill the paragraph instead,
           (paredit-in-comment-p))
       (fill-paragraph argument)
     (save-excursion
+      (end-of-defun)
       (beginning-of-defun)
       (indent-sexp))))
 
@@ -1083,7 +1085,7 @@ This is expected to be called only in `paredit-comment-dwim'; do not
                (save-excursion
                  (newline)
                  (lisp-indent-line)
-                 (indent-sexp))))
+                 (paredit-ignore-sexp-errors (indent-sexp)))))
           (t
            ;; Margin comment
            (indent-to comment-column 1) ; 1 -> force one leading space
@@ -1461,6 +1463,29 @@ With a numeric prefix argument N, do `kill-line' that many times."
 ;;                              nil nil parse-state)
          )
         (t parse-state)))
+
+(defun paredit-copy-as-kill ()
+  "Save in the kill ring the region that `paredit-kill' would kill."
+  (interactive)
+  (save-excursion
+    (if (paredit-in-char-p)
+        (backward-char 2))
+    (let ((beginning (point))
+          (eol (point-at-eol)))
+      (let ((end-of-list-p (paredit-forward-sexps-to-kill beginning eol)))
+        (if end-of-list-p (progn (up-list) (backward-char)))
+        (copy-region-as-kill beginning
+                             (cond (kill-whole-line
+                                    (or (save-excursion
+                                          (paredit-skip-whitespace t)
+                                          (and (not (eq (char-after) ?\; ))
+                                               (point)))
+                                        (point-at-eol)))
+                                   ((and (not end-of-list-p)
+                                         (eq (point-at-eol) eol))
+                                    eol)
+                                   (t
+                                    (point))))))))
 
 ;;;; Cursor and Screen Movement
 
