@@ -554,6 +554,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
       apropos-do-all t
 )
 
+(blink-cursor-mode 1)
+
 (when +running-osx+
   (setq sql-postgres-program "/Library/PostgreSQL/8.3/bin/psql"))
 
