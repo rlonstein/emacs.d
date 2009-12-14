@@ -25,9 +25,6 @@
       :path "/modules/org/xemacs"
       :exec '(lambda () (require 'noutline)))
     ,(rel-new-module-entry
-      :name "slime-contrib"
-      :path "/modules/slime/contrib")
-    ,(rel-new-module-entry
       :name "slime"
       :path "/modules/slime"
       :exec '(lambda () (load-file (localize-load-path "/rel-slime-cfg.el"))))
