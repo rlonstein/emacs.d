@@ -28,8 +28,7 @@
 
 (defconst +local-elisp-subpath+
   (concat +homedir+ "/" 
-          (cond (+is-employer-host+ 
-                 (if +running-windows+ "elisp") "/.custom/elisp")
+          (cond (+is-employer-host+ (if +running-windows+ "elisp") ".emacs.d")
                 (+running-bsd+      ".emacs.d")
                 (+running-osx+      ".emacs.d")
                 (t                  "emacsen"))))
@@ -88,47 +87,44 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (load "rel-load")
 (rel-load-dir-contents (concat (file-name-as-directory +init-file-path+) "rel-modules"))
 
+(let ((my-path-list (cond (+is-employer-host+ '("~/.custom/.emacs.d/"
+						"~/.custom/.emacs.d/misc/"
+						"~/.custom/.emacs.d/modules/slime/"
+						"~/.custom/.emacs.d/modules/slime/contrib/"
+						"~/.custom/.emacs.d/modules/remember/"
+						"~/.custom/.emacs.d/modules/org/lisp/"
+						"~/.custom/.emacs.d/moduless/org/contrib/lisp/"
+						; "~/.custom/.emacs.d/elisp/packages/org/xemacs"
+						"~/.custom/.emacs.d/modules/color-theme/"))
+			  (+running-osx+ '("/opt/local/share/emacs/site-lisp/tiny-tools/lisp/tiny" 
+					   "/opt/local/share/emacs/site-lisp/tiny-tools/lisp/other" 
 
+					   "/Users/lonstein/Library/Application Support/emacsen/misc" 
+					   "/Users/lonstein/Library/Application Support/emacsen/modules" 
+					   "/Users/lonstein/Library/Application Support/emacsen/sourceforge" 
+					   "/Users/lonstein/clojure/"
+					   "/Users/lonstein/clojure/swank"
+					   "/Users/lonstein/clojure/swank-clojure"
+					   "/Users/lonstein/clojure/slime"
+					   "/Users/lonstein/clojure/slime/contrib"
 
-(let ((my-path-list (cond (+is-employer-host+ '("~/.custom/" 
-                                           "~/.custom/elisp" 
-                                           "~/.custom/elisp/misc" 
-                                           "~/.custom/elisp/packages/slime" 
-                                           "~/.custom/elisp/packages/remember" 
-                                           "~/.custom/elisp/packages/org/lisp" 
-                                           "~/.custom/elisp/packages/org/contrib/lisp" 
-                                           "~/.custom/elisp/packages/org/xemacs" 
-                                           "~/.custom/elisp/packages/color-theme")) 
-                       (+running-osx+ '("/opt/local/share/emacs/site-lisp/tiny-tools/lisp/tiny" 
-                                        "/opt/local/share/emacs/site-lisp/tiny-tools/lisp/other" 
+					   "/Users/lonstein/Library/Application Support/emacsen/modules/remember"
 
-
-                                        "/Users/lonstein/Library/Application Support/emacsen/misc" 
-                                        "/Users/lonstein/Library/Application Support/emacsen/modules" 
-                                        "/Users/lonstein/Library/Application Support/emacsen/sourceforge" 
-                                        "/Users/lonstein/clojure/"
-                                        "/Users/lonstein/clojure/swank"
-                                        "/Users/lonstein/clojure/swank-clojure"
-                                        "/Users/lonstein/clojure/slime"
-                                        "/Users/lonstein/clojure/slime/contrib"
-
-                                        "/Users/lonstein/Library/Application Support/emacsen/modules/remember"
-
-                                        "/Users/lonstein/Library/Application Support/emacsen/modules/org/lisp" 
-                                        "/Users/lonstein/Library/Application Support/emacsen/modules/org/contrib/lisp" 
-                                        "/opt/local/share/emacs/site-lisp/w3m")) 
-                       (+running-windows+ '("C:\elisp" 
-                                          "C:\elisp\misc" 
-                                          "C:\elisp\sourceforge" 
-                                          "C:\elisp\packages\remember")) 
-                       (t '("~/emacsen"
-                            "~/emacsen/misc"
-			    "~/emacsen/modules"
-                            "~/emacsen/modules/slime" 
-			    "~/emacsen/modules/slime/contrib"
-			    "~/emacsen/modules/remember"
-			    "~/emacsen/modules/org/lisp"
-			    "~/emacsen/modules/org/contrib/lisp"))))) 
+					   "/Users/lonstein/Library/Application Support/emacsen/modules/org/lisp" 
+					   "/Users/lonstein/Library/Application Support/emacsen/modules/org/contrib/lisp" 
+					   "/opt/local/share/emacs/site-lisp/w3m")) 
+			  (+running-windows+ '("C:\elisp" 
+					       "C:\elisp\misc" 
+					       "C:\elisp\sourceforge" 
+					       "C:\elisp\packages\remember")) 
+			  (t '("~/emacsen"
+			       "~/emacsen/misc"
+			       "~/emacsen/modules"
+			       "~/emacsen/modules/slime" 
+			       "~/emacsen/modules/slime/contrib"
+			       "~/emacsen/modules/remember"
+			       "~/emacsen/modules/org/lisp"
+			       "~/emacsen/modules/org/contrib/lisp"))))) 
   (dolist (p my-path-list) (add-to-load-path p)))
 
 
@@ -722,7 +718,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(when +running-xemacs+ (gnuserv-start))
+(if +running-xemacs+ (gnuserv-start)
+  (progn (require 'server)
+         (server-start)))
 
 (garbage-collect)
 
