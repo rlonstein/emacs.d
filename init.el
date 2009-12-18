@@ -527,32 +527,34 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (setq abbrev-file-name (concat +local-elisp-subpath+ "/abbrev_defs.el"))
 
 ;; more personal customizations
-(setq column-number-mode t                  ; show columns
-      default-abbrev-mode t                 ; abbrev everywhere
-      default-indent-tabs-mode nil          ; no tabs, always spaces
-      history-length 100
-      inhibit-startup-message t             ; don't annoy me at startup
-      kill-whole-line t                     ; I like kill to end of line
-      line-number-mode t                    ; show line numbers
-      make-backup-files nil                 ; I hate finding tilde files
-      minibuffer-max-depth nil              ; recursive/multiple minibufs
-      paren-blink-interval 0.30
-      pending-delete-mode t                 ; delete region on overtype
-      progress-feedback-use-echo-area t
-      remote-shell-program  "ssh"
-      require-final-newline t               ; text files end in newline, thanks
-      save-abbrevs t                        ; autosave abbrevs on exit
-;      skeleton-pair t
-      toolbar-visible-p nil
-      uniquify-buffer-name-style 'forward   ; unique buffer names w/dir
-      user-full-name "Ross Lonstein"
-      user-mail-address "rlonstein@pobox.com"
-      visible-bell t                        ; no beeping
-      yank-excluded-properties t            ; don't paste properties
-      transient-mark-mode t
-      delete-selection-mode t
-      apropos-do-all t
-)
+(setq
+ auto-save-interval 1024
+ auto-save-timeout 120
+ column-number-mode t                  ; show columns
+ default-abbrev-mode t                 ; abbrev everywhere
+ default-indent-tabs-mode nil          ; no tabs, always spaces
+ history-length 100
+ inhibit-startup-message t             ; don't annoy me at startup
+ kill-whole-line t                     ; I like kill to end of line
+ line-number-mode t                    ; show line numbers
+ make-backup-files nil                 ; I hate finding tilde files
+ minibuffer-max-depth nil              ; recursive/multiple minibufs
+ paren-blink-interval 0.30
+ pending-delete-mode t                 ; delete region on overtype
+ progress-feedback-use-echo-area t
+ remote-shell-program  "ssh"
+ require-final-newline t               ; text files end in newline, thanks
+ save-abbrevs t                        ; autosave abbrevs on exit
+                                        ;      skeleton-pair t
+ toolbar-visible-p nil
+ uniquify-buffer-name-style 'forward   ; unique buffer names w/dir
+ user-full-name "Ross Lonstein"
+ user-mail-address "rlonstein@pobox.com"
+ visible-bell t                        ; no beeping
+ yank-excluded-properties t            ; don't paste properties
+ transient-mark-mode t
+ delete-selection-mode t
+ apropos-do-all t)
 
 (blink-cursor-mode 1)
 

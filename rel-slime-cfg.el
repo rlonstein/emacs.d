@@ -12,6 +12,7 @@
 (setq slime-lisp-implementations
       '((sbcl ("/opt/local/bin/sbcl"))
         (clozure ("/Users/lonstein/clozure-1.4/scripts/ccl"))
+        (ecl ("/opt/local/bin/ecl"))
         (clojure ("/Users/lonstein/clojure/clojure.sh")  :init swank-clojure-init)))
 ;; fixme... localize for platform, etc.
 (require 'slime-autoloads)
