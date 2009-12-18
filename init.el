@@ -680,7 +680,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
   (if (null (x-list-fonts font))
       nil t))
 
-(if +running-osx+
+(if (and +running-osx+ (not (null window-system)))
     (let ((preferred-font
            (if +running-carbon-emacs+ "-apple-envy code r-medium-r-normal--13-130-72-72-m-130-iso10646-1"
              "-apple-Envy_Code_R-medium-normal-normal-*-13-*-*-*-m-0-fontset-auto7")))
