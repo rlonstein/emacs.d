@@ -21,11 +21,14 @@
 (require 'slime-banner)
 (require 'slime-asdf)
 (require 'slime-indentation)
+
 (slime-banner-init)
 (slime-asdf-init)
 (setq slime-complete-symboll*-fancy t)
 (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
-(slime-setup)
+
+(slime-setup '(slime-repl))
+
 (add-hook 'lisp-mode-hook (lambda () (slime-mode t)
                             (local-set-key "\r" 'newline-and-indent)
                              (setq lisp-indent-function 'common-lisp-indent-function)
@@ -49,14 +52,5 @@
                (list (cons "^ftp:/.*" (lambda (url &optional nf)
                                         (call-interactively #'find-file-at-point url)))
                      (cons "." #'w3m-browse-url-other-window)))))
-(define-key slime-mode-map (kbd "C-,") 'paredit-backward-slurp-sexp)
-(define-key slime-mode-map (kbd "C-.") 'paredit-forward-slurp-sexp)
-(define-key slime-mode-map (kbd "C-<") 'paredit-backward-barf-sexp)
-(define-key slime-mode-map (kbd "C->") 'paredit-forward-barf-sexp)
-
-(define-key slime-repl-mode-map (kbd "C-,") 'paredit-backward-slurp-sexp)
-(define-key slime-repl-mode-map (kbd "C-.") 'paredit-forward-slurp-sexp)
-(define-key slime-repl-mode-map (kbd "C-<") 'paredit-backward-barf-sexp)
-(define-key slime-repl-mode-map (kbd "C->") 'paredit-forward-barf-sexp)
 
 (message "... set up slime...")
