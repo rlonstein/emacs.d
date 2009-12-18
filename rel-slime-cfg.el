@@ -14,13 +14,14 @@
         (clozure ("/Users/lonstein/clozure-1.4/scripts/ccl"))
         (ecl ("/opt/local/bin/ecl"))
         (clojure ("/Users/lonstein/clojure/clojure.sh")  :init swank-clojure-init)))
-;; fixme... localize for platform, etc.
+
 (require 'slime-autoloads)
 (require 'slime)
-(require 'slime-fancy)
+(require 'slime-fuzzy)
 (require 'slime-banner)
 (require 'slime-asdf)
 (require 'slime-indentation)
+(require 'slime-fancy)
 
 (slime-banner-init)
 (slime-asdf-init)
