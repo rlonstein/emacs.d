@@ -13,22 +13,22 @@
 ;(setq inhibit-default-init t)
 (setq message-log-max 1000)
 
-;; know where we're running, though (featurep 'xemacs) is better 
-(defconst +running-xemacs+  (string-match "XEmacs\\|Lucid" emacs-version)) 
+;; know where we're running, though (featurep 'xemacs) is better
+(defconst +running-xemacs+  (string-match "XEmacs\\|Lucid" emacs-version))
 (defconst +running-osx+     (equal 'darwin system-type))
 (defconst +running-carbon-emacs+ (featurep 'mac-carbon))
-(defconst +running-windows+ (equal 'windows system-type)) 
-(defconst +running-bsd+     (equal 'berkeley-unix system-type)) 
-(defconst +is-employer-host+ (cond 
+(defconst +running-windows+ (equal 'windows system-type))
+(defconst +running-bsd+     (equal 'berkeley-unix system-type))
+(defconst +is-employer-host+ (cond
 			    ((file-directory-p (expand-file-name "/ms/dev/")) t)
-			    (+running-osx+ nil) 
+			    (+running-osx+ nil)
 			    (t nil)))
- 
-(defconst +homedir+ (expand-file-name "~")) ; there's no place like $HOME 
+
+(defconst +homedir+ (expand-file-name "~")) ; there's no place like $HOME
 
 (defconst +local-elisp-subpath+
-  (concat +homedir+ "/" 
-          (cond (+is-employer-host+ 
+  (concat +homedir+ "/"
+          (cond (+is-employer-host+
                  (if +running-windows+ "elisp") "/.custom/elisp")
                 (+running-bsd+      ".emacs.d")
                 (+running-osx+      ".emacs.d")
@@ -67,21 +67,21 @@ The value is an ASCII printing character (not upper case) or a symbol."
           (find-file filename)
         (message "Library %s not found." library)))))
 
-;; Network coding system fix for XEmacs 21.5... by default, it does 
-;; CR/LF conversion on network streams, which breaks IMAP and 
+;; Network coding system fix for XEmacs 21.5... by default, it does
+;; CR/LF conversion on network streams, which breaks IMAP and
 ;; potentially other protocols, thanks Ron Isaacson
 (when +running-xemacs+
-  (when (boundp 'default-network-coding-system) 
+  (when (boundp 'default-network-coding-system)
     (setq default-network-coding-system '(no-conversion))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (defun add-to-load-path (path-string)
-  (message (format "Passed %S..." path-string)) 
-  (if (stringp path-string) 
-      (when (file-exists-p path-string) 
-        (message (format "Adding %S to load-path..." path-string)) 
-        (add-to-list 'load-path (expand-file-name path-string))))) 
+  (message (format "Passed %S..." path-string))
+  (if (stringp path-string)
+      (when (file-exists-p path-string)
+        (message (format "Adding %S to load-path..." path-string))
+        (add-to-list 'load-path (expand-file-name path-string)))))
 
 (add-to-load-path +init-file-path+)
 
@@ -90,45 +90,34 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 
 
-(let ((my-path-list (cond (+is-employer-host+ '("~/.custom/" 
-                                           "~/.custom/elisp" 
-                                           "~/.custom/elisp/misc" 
-                                           "~/.custom/elisp/packages/slime" 
-                                           "~/.custom/elisp/packages/remember" 
-                                           "~/.custom/elisp/packages/org/lisp" 
-                                           "~/.custom/elisp/packages/org/contrib/lisp" 
-                                           "~/.custom/elisp/packages/org/xemacs" 
-                                           "~/.custom/elisp/packages/color-theme")) 
-                       (+running-osx+ '("/opt/local/share/emacs/site-lisp/tiny-tools/lisp/tiny" 
-                                        "/opt/local/share/emacs/site-lisp/tiny-tools/lisp/other" 
-
-
-                                        "/Users/lonstein/Library/Application Support/emacsen/misc" 
-                                        "/Users/lonstein/Library/Application Support/emacsen/modules" 
-                                        "/Users/lonstein/Library/Application Support/emacsen/sourceforge" 
-                                        "/Users/lonstein/clojure/"
-                                        "/Users/lonstein/clojure/swank"
-                                        "/Users/lonstein/clojure/swank-clojure"
-                                        "/Users/lonstein/clojure/slime"
-                                        "/Users/lonstein/clojure/slime/contrib"
-
-                                        "/Users/lonstein/Library/Application Support/emacsen/modules/remember"
-
-                                        "/Users/lonstein/Library/Application Support/emacsen/modules/org/lisp" 
-                                        "/Users/lonstein/Library/Application Support/emacsen/modules/org/contrib/lisp" 
-                                        "/opt/local/share/emacs/site-lisp/w3m")) 
-                       (+running-windows+ '("C:\elisp" 
-                                          "C:\elisp\misc" 
-                                          "C:\elisp\sourceforge" 
-                                          "C:\elisp\packages\remember")) 
+(let ((my-path-list (cond (+is-employer-host+ '("~/.emacs.d/"
+                                                "~/.emacs.d/misc"
+						"~/.emacs.d/modules/slime"
+						"~/.emacs.d/modules/remember"
+						"~/.emacs.d/modules/org/lisp"
+						"~/.emacs.d/modules/org/contrib/lisp"
+						"~/.emacs.d/modules/org/xemacs"
+						"~/.emacs.d/modules/color-theme"))
+			  (+running-osx+ '("/Users/lonstein/.emacs.d/misc"
+					   "/Users/lonstein/.emacs.d/modules"
+					   "/Users/lonstein/.emacs.d/modules/slime"
+					   "/Users/lonstein/.emacs.d/modules/slime/contrib"
+					   "/Users/lonstein/.emacs.d/modules/remember"
+					   "/Users/lonstein/.emacs.d/modules/org/lisp"
+					   "/Users/lonstein/.emacs.d/modules/org/contrib/lisp"
+					   "/opt/local/share/emacs/site-lisp/w3m"))
+                       (+running-windows+ '("C:\elisp"
+                                          "C:\elisp\misc"
+                                          "C:\elisp\sourceforge"
+                                          "C:\elisp\packages\remember"))
                        (t '("~/emacsen"
                             "~/emacsen/misc"
 			    "~/emacsen/modules"
-                            "~/emacsen/modules/slime" 
+                            "~/emacsen/modules/slime"
 			    "~/emacsen/modules/slime/contrib"
 			    "~/emacsen/modules/remember"
 			    "~/emacsen/modules/org/lisp"
-			    "~/emacsen/modules/org/contrib/lisp"))))) 
+			    "~/emacsen/modules/org/contrib/lisp")))))
   (dolist (p my-path-list) (add-to-load-path p)))
 
 
@@ -144,7 +133,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
- 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; some useful local functions, moved to their own file
@@ -154,28 +143,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (load-file (concat +local-elisp-subpath+ "/rel-module-cfg.el"))
 (load-file (concat +local-elisp-subpath+ "/rel-lib.el"))
 (load-file (concat +local-elisp-subpath+ "/misc/lazycat.el"))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Jari's Tiny Tools package has great stuff! Explore a bit more...
-;;
-(when (rel-local-module-enabled-p "tiny-tools")
-  (if (not +is-employer-host+) ; for some reason doesn't play well with others, too lazy to fix
-      (progn 
-        (setq tinypath-:compression-support "all")
-        (setq tinypath-:cache-file-prefix "/tmp/tiny.cache")
-
-; load out of wonky path in darwinports nee. macports, not covered above
-        (if +running-osx+ (load "/opt/local/share/emacs/site-lisp/tiny-tools/lisp/tiny/tinypath.el"))
-        (require 'tiny-setup)
-        (tiny-setup nil)
-        (tinypath-setup
-         'all                        ;; Activate default features safely
-         '(tinyeat--bind))           ;; Smarter deletes, n.b. remaps backspace
-        )))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 ;; William W. Wong's breadcrumb bookmarks
 (if (load "breadcrumb" t)
@@ -191,14 +158,14 @@ The value is an ASCII printing character (not upper case) or a symbol."
   (message "failed to load breadcrumb"))
 
 ;; smarter buffer naming
-(if (load "uniquify" t) 
-    (progn 
+(if (load "uniquify" t)
+    (progn
       (setq uniquify-buffer-name-style 'post-forward)
       (load "disbufnam" t)
       (message "configured uniquify"))
   (message "failed to load uniquify"))
 
-(if +running-xemacs+ 
+(if +running-xemacs+
     (progn (require 'redo)
 	   (define-key global-map (kbd "C-/") 'undo)
 	   (define-key global-map (kbd "C-x C-/") 'redo)))
@@ -360,17 +327,17 @@ The value is an ASCII printing character (not upper case) or a symbol."
     '(progn
       (define-prefix-command 'org-todo-state-map)
       (define-key org-mode-map "\C-cx" 'org-todo-state-map)
-      (define-key org-todo-state-map "x" #'(lambda nil (interactive) (org-todo "CANCELLED"))) 
-      (define-key org-todo-state-map "d" #'(lambda nil (interactive) (org-todo "DONE"))) 
-      (define-key org-todo-state-map "f" #'(lambda nil (interactive) (org-todo "DEFERRED"))) 
-      (define-key org-todo-state-map "l" #'(lambda nil (interactive) (org-todo "DELEGATED"))) 
-      (define-key org-todo-state-map "r" #'(lambda nil (interactive) (org-todo "RESCHEDULED"))) 
-      (define-key org-todo-state-map "s" #'(lambda nil (interactive) (org-todo "STARTED"))) 
-      (define-key org-todo-state-map "w" #'(lambda nil (interactive) (org-todo "WAITING"))) 
-      (define-key org-todo-state-map "o" #'(lambda nil (interactive) (org-todo "REOPENED"))) 
+      (define-key org-todo-state-map "x" #'(lambda nil (interactive) (org-todo "CANCELLED")))
+      (define-key org-todo-state-map "d" #'(lambda nil (interactive) (org-todo "DONE")))
+      (define-key org-todo-state-map "f" #'(lambda nil (interactive) (org-todo "DEFERRED")))
+      (define-key org-todo-state-map "l" #'(lambda nil (interactive) (org-todo "DELEGATED")))
+      (define-key org-todo-state-map "r" #'(lambda nil (interactive) (org-todo "RESCHEDULED")))
+      (define-key org-todo-state-map "s" #'(lambda nil (interactive) (org-todo "STARTED")))
+      (define-key org-todo-state-map "w" #'(lambda nil (interactive) (org-todo "WAITING")))
+      (define-key org-todo-state-map "o" #'(lambda nil (interactive) (org-todo "REOPENED")))
 
       (eval-after-load "org-agenda"
-        '(progn 
+        '(progn
            (define-key org-agenda-mode-map "\C-n" 'next-line)
            (define-key org-agenda-keymap "\C-n" 'next-line)
            (define-key org-agenda-mode-map "\C-p" 'previous-line)
@@ -380,7 +347,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
       (require 'table)
 
       (add-hook 'remember-mode-hook 'org-remember-apply-template)
-      
+
       (setf
        org-agenda-files (quote ("~/Documents/todo/todo.org"))
        org-default-notes-file "~/Documents/todo/notes.org"
@@ -426,9 +393,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
                     ("Note" ?n "* %u %?" "~/Documents/todo/notes.org" "Notes"))))
       (setf remember-annotation-functions (quote (org-remember-annotation))
             remember-handler-functions (quote (org-remember-handler)))
-      
-      (global-set-key (kbd "C-c o l") 'org-store-link) 
-      (global-set-key (kbd "C-c o a") 'org-agenda) 
+
+      (global-set-key (kbd "C-c o l") 'org-store-link)
+      (global-set-key (kbd "C-c o a") 'org-agenda)
       (global-set-key (kbd "C-c o r") 'remember)))
 
   (message "... set up org-mode..."))
@@ -518,7 +485,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (fset 'yes-or-no-p 'y-or-n-p)
 
 ;; OSX, need this on Carbon Emacs
-(when +running-osx+ 
+(when +running-osx+
     (progn (set-cursor-color "white")
            (setq x-select-enable-clipboard t)))
 

@@ -13,24 +13,24 @@
 (setq slime-lisp-implementations
       '((sbcl ("/opt/local/bin/sbcl"))
         (clozure ("/Users/lonstein/clozure-1.4/scripts/ccl"))
-        (ecl ("/opt/local/bin/ecl"))
-;        (clojure ("/Users/lonstein/clojure/clojure.sh")  :init swank-clojure-init))
-)
+        (ecl ("/opt/local/bin/ecl"))))
+;        (clojure ("/Users/lonstein/clojure/clojure.sh")  :init swank-clojure-init)
 
 (require 'slime-autoloads)
 (require 'slime)
-(require 'slime-fuzzy)
 (require 'slime-banner)
-(require 'slime-asdf)
 (require 'slime-indentation)
+
+; fancy brings in repl, autodoc, c-p-c, editing-commands, fancy-inspector,
+;   fuzzy, highlight-edits, presentations, scratch, xref-browser, references,
+;   mdot-fu, package-fu and fontifying-fu
 (require 'slime-fancy)
 
 (slime-banner-init)
-(slime-asdf-init)
 (setq slime-complete-symboll*-fancy t)
 (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
 
-(slime-setup '(slime-repl))
+(slime-setup '(slime-fancy))
 
 (add-hook 'lisp-mode-hook (lambda () (slime-mode t)
                             (local-set-key "\r" 'newline-and-indent)
