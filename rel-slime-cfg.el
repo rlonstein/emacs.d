@@ -3,17 +3,19 @@
 ;; http://creativecommons.org/licenses/MIT/
 ;;
 
-(require 'clojure-mode)
-(add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
-(setq swank-clojure-jar-path "/Users/lonstein/clojure/clojure/clojure.jar")
-(setq swank-java-path "/usr/bin/java")
-(setq swank-clojure-binary "/Users/lonstein/clojure/clojure.sh")
-(require 'swank-clojure)
+;(require 'clojure-mode)
+;(add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
+;(setq swank-clojure-jar-path "/Users/lonstein/clojure/clojure/clojure.jar")
+;(setq swank-java-path "/usr/bin/java")
+;(setq swank-clojure-binary "/Users/lonstein/clojure/clojure.sh")
+;(require 'swank-clojure)
+
 (setq slime-lisp-implementations
       '((sbcl ("/opt/local/bin/sbcl"))
         (clozure ("/Users/lonstein/clozure-1.4/scripts/ccl"))
         (ecl ("/opt/local/bin/ecl"))
-        (clojure ("/Users/lonstein/clojure/clojure.sh")  :init swank-clojure-init)))
+;        (clojure ("/Users/lonstein/clojure/clojure.sh")  :init swank-clojure-init))
+)
 
 (require 'slime-autoloads)
 (require 'slime)
