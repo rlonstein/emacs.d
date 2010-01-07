@@ -11,6 +11,10 @@
 (defvar modules)
 
 
+; FIXME: rewrite this- stat the directory, compare contents to date of
+; dot module, if differ offer to update dot module with list of file
+; ... (file-newer-than-file-p <f1> <f2>)
+
 (defun rel-eval-dot-module (dir)
   (let ((module-file (concat (file-name-as-directory dir) rel-dot-filename))
         (modules nil))

@@ -1,13 +1,16 @@
-;;
-;; Choose a random signature from a vanilla text fortune file
-;; (entries separated by a percentage symbol)
-;;
-;; (c) 2009, R. Lonstein
+;;; rel-sig.el --- random fortune as signature
+;; Copyright (C) 2009, R. Lonstein
 ;; http://creativecommons.org/licenses/MIT/
-;;
 
+;; Author: Ross Lonstein <rlonstein@pobox.com>
+;; Version: 0.1
+;; Keywords: mail, signature, fortune
+;; Description: Choose a random signature from a vanilla text fortune
+;; file (entries separated by a percentage symbol)
+
+;;; Code:
 (eval-when-compile
-  (require 'cl))     ; because I like CL's LOOP macro...
+  (require 'cl))                   ; because I like CL's LOOP macro...
 
 (defvar rel-sigfile "~/.sigs")
 
@@ -41,3 +44,5 @@
     (insert "--\n" (rel-pick-fortune))))
 
 (provide 'rel-sig)
+
+;;; rel-sig.el ends here
