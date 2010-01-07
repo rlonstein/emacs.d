@@ -5,17 +5,17 @@
 ;; Author: Lynn Slater
 ;;         Drew Adams
 ;; Maintainer: Drew Adams
-;; Copyright (C) 1996-2007, Drew Adams, all rights reserved.
+;; Copyright (C) 1996-2009, Drew Adams, all rights reserved.
 ;; Copyright (C) 1989 Free Software Foundation, Inc.
 ;; Copyright (C) 1988 Lynn Randolph Slater, Jr.
 ;; Created: Tue Aug  4 17:06:46 1987
 ;; Version: 21.0
-;; Last-Updated: Fri Jan 19 21:06:34 2007 (-28800 Pacific Standard Time)
+;; Last-Updated: Sun Oct 25 09:23:39 2009 (-0700)
 ;;           By: dradams
-;;     Update #: 1533
+;;     Update #: 1710
 ;; URL: http://www.emacswiki.org/cgi-bin/wiki/header2.el
 ;; Keywords: tools, docs, maint, abbrev, local
-;; Compatibility: GNU Emacs 20.x, GNU Emacs 21.x, GNU Emacs 22.x
+;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -23,57 +23,63 @@
 ;;
 ;; Support for creation and update of file headers.
 ;;
-;; This code and commentary was originally written by Lynn Slater,
-;; 42075 Lawrence Place, Fremont Ca 94538 Office (415) 438-2048; Home
-;; (415) 796-4149; Fax 438-2034.  It has been modified by D. Adams.
+;; Some of this code and commentary were originally written by Lynn
+;; Slater as file `header.el'.  Drew Adams updated it and maintains it
+;; as `header2.el'.  The original is here:
+;; `http://www.emacswiki.org/cgi-bin/wiki/download/OriginalHeaderEl'.
 ;;
 ;; Commands (interactive functions) defined here:
 ;;
 ;;   `make-header', `make-revision', `make-divider',
-;;   `make-box-comment', `update-file-header',
+;;   `make-box-comment', `update-file-header'.
 ;;
 ;; Other functions defined here:
 ;;
-;;   `auto-make-header', `delete-and-forget-line', `header-AFS',
-;;   `header-author', `header-blank', `header-code',
-;;   `header-commentary', `header-compatibility', `header-copyright',
-;;   `header-creation-date', `header-description', `header-end-line',
-;;   `header-eof', `header-file-name', `header-free-software',
-;;   `header-history', `header-keywords', `header-lib-requires',
-;;   `header-maintainer', `header-mode-line',
-;;   `header-modification-author', `header-modification-date',
-;;   `header-prefix-string', `header-rcs-id', `header-rcs-log',
-;;   `header-sccs', `header-shell', `header-status', `header-title',
-;;   `header-toc', `header-update-count', `header-version',
-;;   `headerable-file-p', `make-box-comment', `make-divider',
-;;   `make-header', `make-revision', `register-file-header-action',
+;;   `auto-make-header', `auto-update-file-header',
+;;   `delete-and-forget-line', `header-AFS', `header-author',
+;;   `header-blank', `header-code', `header-commentary',
+;;   `header-compatibility', `header-copyright',
+;;   `header-creation-date', `header-date-string',
+;;   `header-description', `header-end-line', `header-eof',
+;;   `header-file-name', `header-free-software', `header-history',
+;;   `header-keywords', `header-lib-requires', `header-maintainer',
+;;   `header-mode-line', `header-modification-author',
+;;   `header-modification-date', `header-prefix-string',
+;;   `header-rcs-id', `header-rcs-log', `header-sccs', `header-shell',
+;;   `header-status', `header-title', `header-toc',
+;;   `header-update-count', `header-version', `headerable-file-p',
+;;   `make-box-comment', `make-divider', `make-header',
+;;   `make-revision', `register-file-header-action',
 ;;   `section-comment-start', `true-mode-name', `uniquify-list',
 ;;   `update-file-name', `update-last-modified-date',
 ;;   `update-last-modifier', `update-lib-requires',
-;;   `update-write-count'
+;;   `update-write-count'.
 ;;
 ;; User options (variables) defined here:
 ;;
-;;   `header-copyright-notice', `header-history-label', `header-max',
-;;   `make-header-hook'
+;;   `header-copyright-notice', `header-date-format',
+;;   `header-history-label', `header-max', `make-header-hook'.
 ;;
 ;; Other variables defined here:
 ;;
-;;   `file-header-update-alist', `header-prefix-string', `return-to'
+;;   `file-header-update-alist', `header-prefix-string', `return-to'.
 ;;
-;; Do this in your ~/.emacs:
 ;;
-;;   ;; Update file headers when write files.
-;;   (add-hook 'write-file-hooks 'update-file-header)
+;; To have Emacs update file headers automatically whenever you save a
+;; file, put this in your init file (~/.emacs):
 ;;
-;;   ;; Create headers for file buffers in my favorite modes.
+;;   (add-hook 'write-file-hooks 'auto-update-file-header)
+;;
+;; To have Emacs add a file header whenever you create a new file in
+;; some mode, put this in your init file (~/.emacs):
+;;
 ;;   (add-hook 'emacs-lisp-mode-hook 'auto-make-header)
 ;;   (add-hook 'c-mode-common-hook   'auto-make-header)
 ;;   ...
 ;;
 ;;
 ;;
-;; Original header2.el text by Lynn Slater:
+;; From the original header.el text by Lynn Slater:
 ;;
 ;;     This file is particularly useful with the file-declarations
 ;;     package also by Lynn Slater.  Read the first 20% of this file
@@ -110,7 +116,7 @@
 ;;     recreate the file to patch accordingly.
 ;;
 ;;     In this message are three files:
-;;       header2.el - Emacs header functions and instructions
+;;       header.el - Emacs header functions and instructions
 ;;       headers.1  - Man page for command line headers useage
 ;;       headers    - Shell script for command-line headers.
 ;;
@@ -157,10 +163,38 @@
 ;;
 ;;; Change log:
 ;;
+;; 2009/10/25 dadams
+;;     Renamings from lib-require.el.  If you use that library, you must update it.
+;;       lib-requires-header -> libreq-file-header
+;;       insert-lib-requires-as-comment -> libreq-insert-lib-requires-as-comment
+;; 2009/09/24 dadams
+;;     header-multiline: Use a marker for END, and go to it after insert multiline.
+;;     header-eof: Go to point-max and insert newline.
+;; 2008/09/06 dadams
+;;     update-write-count: Keep rest of line, after number.  Thx to Johan Vromans.
+;;     Added update-VCS-version, commented out.
+;; 2008/08/06 dadams
+;;     header-date-string: Use %z, not %Z - the latter no longer works on Windows.
+;; 2008/07/11 dadams
+;;     header-title, header-file-name, header-eof:
+;;       Use buffer-file-name, if available.  Thx Juan Miguel Cejuela for suggestion.
+;; 2008/03/14 dadams
+;;     header-free-software: Update version 2 -> version 3 of GPL.
+;; 2008/01/18 dadams
+;;     header-creation-date: Added time zone also.  Thx to Sebastian Luque.
+;;     Added: header-date-(string|format).
+;;     header-creation-date, update-last-modified-date: Use header-date-format.
+;; 2007/12/12 dadams
+;;     INCOMPATIBLE CHANGE - If you previously used update-file-header as a
+;;                           write-file-hook, change it to auto-update-file-header.
+;;     Added auto-update-file-header.  Uses new update-file-header.
+;;     update-file-header: Made unconditional.  Thx to Lennart Borgman.
+;; 2007/03/25 dadams
+;;     make-header: Use let*, so comment-end-p is bound in header-prefix-string.
 ;; 2006/01/13 dadams
-;;      Added: header-url.
+;;     Added: header-url.
 ;; 2006/01/07 dadams
-;;      Added :link.
+;;     Added :link.
 ;; 2005/11/04 dadams
 ;;     update-last-modified-date: Added timezone.
 ;; 2005/10/21 dadams
@@ -257,7 +291,7 @@
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
+;; the Free Software Foundation; either version 3, or (at your option)
 ;; any later version.
 
 ;; This program is distributed in the hope that it will be useful,
@@ -275,8 +309,10 @@
 ;;; Code:
 
 (and (< emacs-major-version 20) (eval-when-compile (require 'cl))) ;; when, unless
-(require 'lib-requires nil t) ;; (no error if not found):
-                              ;; insert-lib-requires-as-comment, lib-requires-header
+(require 'lib-requires nil t)
+  ;; (no error if not found):
+  ;; libreq-insert-lib-requires-as-comment, libreq-file-header
+
 ;;;;;;;;;;;;;;;;;;;;;;
 
 (provide 'header2)
@@ -333,6 +369,17 @@ Don't forget to mention your Emacs and library versions."))
   "*Copyright notice to be inserted into file headers."
     :type '(choice (const :tag "No copyright notice (value nil)" nil) string)
     :group 'Automatic-File-Header)
+
+(defcustom header-date-format t
+  "Date/time format for header timestamp.
+The value can be a string, t, or nil.
+A string value is passed to `format-time-string'.
+t means use local time with timezone; nil means use UTC."
+  :group 'Automatic-File-Header
+  :type '(choice
+          (const  :tag "Local time, with timezone" t)
+          (const  :tag "UTC" nil)
+          (string :tag "Custom format")))
 
 ;; Change this as you like.
 ;; Note that the Elisp manual, node Library Headers, suggests putting copyright just
@@ -402,8 +449,8 @@ file `header2.el' to do this."
 (defcustom header-free-software
   "This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2, or
-(at your option) any later version.
+published by the Free Software Foundation; either version 3, or
+\(at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -465,12 +512,19 @@ In `emacs-lisp-mode', this should produce the title line for library
 packages."
   (insert (concat comment-start (and (= 1 (length comment-start))
                                      header-prefix-string)
-                  (buffer-name) " --- " "\n"))
+                  (if (buffer-file-name)
+                      (file-name-nondirectory (buffer-file-name))
+                    (buffer-name))
+                  " --- " "\n"))
   (setq return-to (1- (point))))
 
 (defsubst header-file-name ()
   "Insert \"Filename: \" line, using buffer's file name."
-  (insert header-prefix-string "Filename: " (buffer-name) "\n"))
+  (insert header-prefix-string "Filename: "
+          (if (buffer-file-name)
+              (file-name-nondirectory (buffer-file-name))
+            (buffer-name))
+          "\n"))
 
 (defsubst header-description ()
   "Insert \"Description: \" line."
@@ -500,8 +554,18 @@ packages."
         (goto-char (point-max))))))
 
 (defsubst header-creation-date ()
-  "Insert today's date (`current-time-string') as file creation date."
-  (insert header-prefix-string "Created: "  (current-time-string) "\n"))
+  "Insert today's time, date, and time zone as file creation date."
+  (insert header-prefix-string "Created: ")
+  (insert (header-date-string) "\n"))
+
+(defun header-date-string ()
+  "Current date and time."
+  (format-time-string
+   (cond ((stringp header-date-format) header-date-format)
+         (header-date-format "%a %b %e %T %Y (%z)")
+         (t "%a %b %e %T %Y (UTC)"))
+   (current-time)
+   (not header-date-format)))
 
 (defsubst header-rcs-id ()
   "Insert lines to record RCS id information (\"$Id$\n\")."
@@ -531,7 +595,7 @@ Without this, `make-revision' inserts `header-history-label' after the header."
 
 ;; Variable `comment-end-p' is free here.  It is bound in `make-header'.
 (defun header-multiline ()
-  "Insert multiline comment.  The comment text is in header-multiline."
+  "Insert multiline comment.  The comment text is in `header-multiline'."
   (let ((lineno 1)
         beg end nb-lines)
     (beginning-of-line)
@@ -541,7 +605,7 @@ Without this, `make-revision' inserts `header-history-label' after the header."
       (insert header-prefix-string))
     (setq beg (point))
     (insert header-multiline)
-    (setq end (point))
+    (setq end (point-marker))
     (setq nb-lines (count-lines beg end))
     (goto-char beg)
     (forward-line 1)
@@ -549,6 +613,7 @@ Without this, `make-revision' inserts `header-history-label' after the header."
       (insert header-prefix-string)
       (forward-line 1)
       (setq lineno (1+ lineno)))
+    (goto-char end)
     (when comment-end-p (insert "\n"))
     (insert comment-end)
     (insert "\n")
@@ -560,15 +625,21 @@ Without this, `make-revision' inserts `header-history-label' after the header."
 (defsubst header-code ()
   "Insert \"Code: \" line."
   (insert (concat (section-comment-start) "Code:" (and comment-end-p comment-end)
-                  "\n\n\n\n\n")))
+                  "\n\n\n")))
 
 ;; Variable `comment-end-p' is free here.  It is bound in `make-header'.
 (defsubst header-eof ()
   "Insert comment indicating end of file."
+  (goto-char (point-max))
+  (insert "\n")
   (unless comment-end-p (header-end-line))
   (insert comment-start
           (concat (and (= 1 (length comment-start)) header-prefix-string)
-                  (buffer-name) " ends here" (if comment-end-p comment-end "\n"))))
+                  (if (buffer-file-name)
+                      (file-name-nondirectory (buffer-file-name))
+                    (buffer-name))
+                  " ends here"
+                  (if comment-end-p comment-end "\n"))))
 
 (defsubst header-modification-date ()
   "Insert todays date as the time of last modification.
@@ -598,8 +669,8 @@ This is normally overwritten with each file save."
 
 (defsubst header-lib-requires ()
   "Insert list of libraries required by this one."
-  (when (and (eq major-mode 'emacs-lisp-mode) (boundp 'lib-requires-header))
-    (insert lib-requires-header)        ; Defined in `lib-requires.el'.
+  (when (and (eq major-mode 'emacs-lisp-mode) (boundp 'libreq-file-header))
+    (insert libreq-file-header)         ; Defined in `lib-requires.el'.
     (insert ";;   None\n;;\n")))
 
 (defsubst header-status ()
@@ -695,12 +766,15 @@ with the same args overwrites the previous FUNCTION-TO-CALL."
 ;; Register the automatic actions to take for file headers during a save
 ;; See the second part of the file for explanations.
 ;; ---------------------------------------------------------------------
-;;(register-file-header-action "^.* *\\(.*\\) *\\-\\-" 'update-file-name)
+;; (register-file-header-action "^.* *\\(.*\\) *\\-\\-" 'update-file-name)
+;; (register-file-header-action "\$VERSION[ \t]*=[ \t]*\"\\([0-9]+\\.\\)+"
+;;                              'update-write-count)
+
 (register-file-header-action "Last-Updated[ \t]*: " 'update-last-modified-date)
 (register-file-header-action "          By[ \t]*: " 'update-last-modifier)
 (register-file-header-action "    Update #[ \t]*: " 'update-write-count)
-(when (boundp 'lib-requires-header)
-  (register-file-header-action lib-requires-header 'update-lib-requires))
+(when (boundp 'libreq-file-header)
+  (register-file-header-action libreq-file-header 'update-lib-requires))
 
 
 ;; Header and file division header creation code
@@ -747,7 +821,8 @@ Is sensitive to language-dependent comment conventions."
 ;;;###autoload
 (defun auto-make-header ()
   "Call `make-header' if current buffer is empty and is a file buffer."
-  (and (zerop (buffer-size)) (not buffer-read-only) (buffer-file-name) (make-header)))
+  (and (zerop (buffer-size)) (not buffer-read-only) (buffer-file-name)
+       (make-header)))
 
 ;;;###autoload
 (defun make-header ()
@@ -758,10 +833,11 @@ and end lines start and terminate block comments.  The body lines continue
 the comment."
   (interactive)
   (beginning-of-buffer)                 ; Leave mark at old location.
-  (let ((return-to nil)                 ; To be set by `make-header-hook'.
-        (header-prefix-string (header-prefix-string)) ; Cache result.
-        (comment-start-p (and comment-start (not (string= "" comment-start))))
-        (comment-end-p (and comment-end (not (string= "" comment-end)))))
+  ;; Use `let*' because `header-prefix-string' refers to `comment-end-p'.
+  (let* ((return-to nil)                ; To be set by `make-header-hook'.
+         (comment-start-p (and comment-start (not (string= "" comment-start))))
+         (comment-end-p (and comment-end (not (string= "" comment-end))))
+         (header-prefix-string (header-prefix-string))) ; Cache result.
     (mapcar (function funcall) make-header-hook)
     (when return-to (goto-char return-to))))
 
@@ -872,30 +948,39 @@ END-COL is the last column of the divider line."
 ;;;###autoload
 (defun update-file-header ()
   "Update file header.
-If file has been modified, search the first `header-max' chars in buffer
-using regexps in `file-header-update-alist'.  When a match is found, apply
-the corresponding function with point located just after the match.
-The functions can use `match-beginning' and `match-end' to find the
-strings that cause them to be invoked."
+Search the first `header-max' chars in buffer using regexps in
+`file-header-update-alist'.  When a match is found, apply the
+corresponding function with point located just after the match.
+The functions can use `match-beginning' and `match-end' to find
+the strings that cause them to be invoked."
   (interactive)
+  (save-excursion
+    (save-restriction                   ; Only search `header-max' chars.
+      (narrow-to-region 1 (min header-max (1- (buffer-size))))
+      (let ((patterns file-header-update-alist))
+        ;; Do not record this call as a command in command history.
+        (setq last-command nil)
+        (while patterns
+          (goto-char (point-min))
+          (when (re-search-forward (car (car patterns)) nil t)
+            ;; Position cursor at end of match.
+            (goto-char (match-end 0))
+            ;;(message "do %s" (car patterns)) (sit-for 1)
+            (funcall (cdr (car patterns))))
+          (setq patterns (cdr patterns)))))))
+
+;;;###autoload
+(defun auto-update-file-header ()
+  "Update file header if file is modified.
+If file is modified, size is greater than 100 and buffer is not
+read only then call `update-file-header."
   (and (> (buffer-size) 100)
        (buffer-modified-p)
        (not buffer-read-only)
-       (save-excursion
-         (save-restriction              ; Only search `header-max' chars.
-           (narrow-to-region 1 (min header-max (1- (buffer-size))))
-           (let ((patterns file-header-update-alist))
-             ;; Do not record this call as a command in command history.
-             (setq last-command nil)
-             (while patterns
-               (goto-char (point-min))
-               (when (re-search-forward (car (car patterns)) nil t)
-                 ;; Position cursor at end of match.
-                 (goto-char (match-end 0))
-                 ;;(message "do %s" (car patterns)) (sit-for 1)
-                 (funcall (cdr (car patterns))))
-               (setq patterns (cdr patterns))))))
-       nil))
+       (update-file-header)
+       nil))                            ; Return nil for use as hook.
+
+
 
 ;; Define individual file header actions.  These are the building
 ;; blocks of automatic header maintenance.
@@ -909,14 +994,34 @@ strings that cause them to be invoked."
     str))
 
 (defun update-write-count ()
-  "Increment the update number."
-  (let ((num)
-        (str (delete-and-forget-line)))
-    (setq num (car (read-from-string str)))
+  (let* ((str (delete-and-forget-line))
+	 (rem (read-from-string str))
+	 (num (car rem)))
     (if (numberp num)
-        (insert (format "%s" (1+ num)))
+        (insert (format "%s" (1+ num)) (substring str (cdr rem)))
       (insert str)
       (error "Invalid number for update count `%s'" str))))
+
+;;; (defun update-VCS-version ()
+;;;   "Update VCS version, of the form $VERSION = \"NUM\".
+;;; NUM is a decimal number with one or more decimal points -
+;;; e.g. 3.1415.9265.  Only the part after the last decimal point is
+;;; incremented."
+;;;   (interactive)
+;;;   (let* ((beg  (point))
+;;;          (eol  (save-excursion (end-of-line) (point)))
+;;;          (end  (re-search-forward "\\([^\\\"]+\\)\"" eol t))
+;;;          (str  (buffer-substring beg (1- end)))
+;;;          (num  (car (condition-case err
+;;;                         (read-from-string str)
+;;;                       (error (format "Invalid number for version `%s'" str))))))
+;;;     (when (>= num most-positive-fixnum)
+;;;       (error "Version number is too large to increment: `%s'" num))
+;;;     (when (and end (numberp num))
+;;;       (let ((newnum (condition-case err2
+;;;                         (1+ num)
+;;;                       (error (format "Invalid number for version `%s'" str)))))
+;;;         (replace-match (format "%d" newnum) nil nil nil 1)))))
 
 (defsubst update-last-modifier ()
   "Update the line that indicates who last modified the file."
@@ -928,7 +1033,7 @@ strings that cause them to be invoked."
 (defsubst update-last-modified-date ()
   "Update the line that indicates the last-modified date."
   (delete-and-forget-line)
-  (insert (format "%s %s" (current-time-string) (current-time-zone))))
+  (insert (header-date-string)))
 
 (defun update-file-name ()
   "Update the line that indicates the file name."
@@ -942,8 +1047,8 @@ strings that cause them to be invoked."
 
 (defun update-lib-requires ()
   "Update the lines that show what libraries are required by this one.
-This uses function `insert-lib-requires-as-comment' from library
-`lib-requires.el'.
+This uses function `libreq-insert-lib-requires-as-comment' from
+library `lib-requires.el'.
 
 Note: If a byte-compiled (`*.el') of the library is available, it is
 used when determining library dependencies, in preference to the
@@ -953,12 +1058,13 @@ the byte-compiled file, not the source file.  If the bye-compiled file
 is out-of-date with respect to its required libraries, so will be the
 result of `update-lib-requires'."
   (when (buffer-file-name)              ; Do nothing if not a file buffer.
-    (let ((lib (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))))
+    (let ((lib (file-name-sans-extension
+                (file-name-nondirectory (buffer-file-name)))))
       (when (and (eq major-mode 'emacs-lisp-mode)
-                 (fboundp 'insert-lib-requires-as-comment)) ; In `lib-requires.el'.
+                 (fboundp 'libreq-insert-lib-requires-as-comment))
         (goto-char (match-beginning 0))
-        ;; Verify looking at `lib-requires-header'"
-        (when (looking-at (regexp-quote lib-requires-header))
+        ;; Verify looking at `libreq-file-header'"
+        (when (looking-at (regexp-quote libreq-file-header))
           (delete-and-forget-line) (delete-char 1)
           (delete-and-forget-line) (delete-char 1)
           (while (not (looking-at "^;;$")) (delete-and-forget-line) (delete-char 1))
@@ -966,10 +1072,10 @@ result of `update-lib-requires'."
           (condition-case err
 ;;               (let ((load-path (cons (file-name-directory (buffer-file-name))
 ;;                                      load-path)))
-                (insert-lib-requires-as-comment lib) ; Tries to load the library.
+                (libreq-insert-lib-requires-as-comment lib) ; Tries to load LIB.
 ;;                )
             ;; Typically, user just now added `provide' and must load again.
-            (error (insert lib-requires-header (header-prefix-string) "  "
+            (error (insert libreq-file-header (header-prefix-string) "  "
                            (error-message-string err) ".\n;;\n"))))))))
 
 
@@ -1016,6 +1122,7 @@ result of `update-lib-requires'."
 ;(defun touch-headers ()
 ;  (if (or (string= argi "-touch") (string= argi "-touch-headers"))
 ;      (let ((trim-versions-without-asking t)
+;            ;; Next line should have a Control-G char, not a space, before `true'.
 ;            (executing-macro " true"));; suppress "Mark Set" messages
 ;        ;; Consume all following arguments until one starts with a "-"
 ;        (while (and command-line-args-left
@@ -1035,6 +1142,7 @@ result of `update-lib-requires'."
 ;(defun make-headers ()
 ;  (if (or (string= argi "-make-headers") (string= argi "-make"))
 ;      (let ((trim-versions-without-asking t)
+;            ;; Next line should have a Control-G char, not a space, before `true'.
 ;            (executing-macro " true"));; suppress "Mark Set" messages
 ;        ;; Consume all following arguments until one starts with a "-"
 ;        (while (and command-line-args-left
@@ -1058,6 +1166,7 @@ result of `update-lib-requires'."
 ;  (if (or (string= argi "-default-mode")
 ;          (string= argi "-default"))
 ;      (let ((trim-versions-without-asking t)
+;            ;; Next line should have a Control-G char, not a space, before `true'.
 ;            (executing-macro " true");; suppress "Mark Set" messages
 ;            (mode (intern (car command-line-args-left))))
 ;        (if (memq mode (mapcar 'cdr auto-mode-alist))
@@ -1077,6 +1186,7 @@ result of `update-lib-requires'."
 ;  (if (or (string= argi "-required-mode")
 ;          (string= argi "-mode"))
 ;      (let ((trim-versions-without-asking t)
+;            ;; Next line should have a Control-G, not a space, char before `true'.
 ;            (executing-macro " true");; suppress "Mark Set" messages
 ;            (mode (intern (car command-line-args-left))))
 ;        (if (memq mode (mapcar 'cdr auto-mode-alist))
