@@ -40,12 +40,13 @@
 (defmethod xref-doit ((type (eql :depends-on)) thing)
   (loop for dependency in (who-depends-on thing)
         for asd-file = (asdf:system-definition-pathname dependency)
-        collect (list dependency
-                      (swank-backend::make-location
-                       `(:file ,(namestring asd-file))
-                       `(:position 1)
-                       `(:snippet ,(format nil "(defsystem :~A" dependency)
-                         :align t)))))
+        when asd-file
+          collect (list dependency
+                        (swank-backend::make-location
+                         `(:file ,(namestring asd-file))
+                         `(:position 1)
+                         `(:snippet ,(format nil "(defsystem :~A" dependency)
+                           :align t)))))
 
 
 (defslimefun operate-on-system-for-emacs (system-name operation &rest keywords)
@@ -133,8 +134,9 @@ already knows."
         files)))
 
 (defslimefun asdf-system-loaded-p (name)
-  (gethash 'asdf:load-op
-           (asdf::component-operation-times (asdf:find-system name))))
+  (and (gethash 'asdf:load-op
+                (asdf::component-operation-times (asdf:find-system name)))
+       t))
 
 (defslimefun asdf-system-directory (name)
   (cl:directory-namestring
@@ -186,6 +188,7 @@ already knows."
 
 (defvar *recompile-system* nil)
 
+#+#.(swank-backend:with-symbol 'around 'asdf)
 (defmethod asdf:operation-done-p asdf:around ((operation asdf:compile-op)
                                               component)
   (unless (eql *recompile-system*
@@ -195,5 +198,14 @@ already knows."
 (defslimefun reload-system (name)
   (let ((*recompile-system* (asdf:find-system name)))
     (operate-on-system-for-emacs name 'asdf:load-op)))
+
+;; Doing list-all-systems-in-central-registry might be quite slow
+;; since it accesses a file-system, so run it once at the background
+;; to initialize caches.
+(eval-when (:load-toplevel :execute)
+  (when (eql *communication-style* :spawn)
+    (spawn (lambda ()
+             (ignore-errors (list-all-systems-in-central-registry)))
+           :name "init-asdf-fs-caches")))
 
 (provide :swank-asdf)

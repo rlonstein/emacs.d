@@ -1,3 +1,122 @@
+2010-01-06  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank-backend (declaration-arglist): Normalize declaration
+	specifiers to contain `variables' rather than `vars'.
+
+2010-01-05  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank-sbcl.lisp (compiler-note-location): Add missing return-from.
+
+2010-01-05  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (compile-defun [test]): Add two cases.
+
+2010-01-05  Cecil Westerhof  <Cecil@decebal.nl>
+
+	* slime.texi (inferior-slime-mode): Fix thinko.
+
+2010-01-05  Terje Norderhaug  <terje@in-progress.com>
+
+	Provide default implementation for all-threads.
+
+	* swank-backend.lisp (all-threads): Just return ().
+
+2010-01-05  Helmut Eller  <heller@common-lisp.net>
+
+	Fix M-. bug related to CMUCL's multi-file compilation units.
+
+	* swank-cmucl.lisp (code-location-stream-position): Require the
+	"root-number" as argument and subtract it from the TLF number.
+	(location-in-file): Pass the root number along.
+	(code-location-string-offset): Use 0 as root number.
+
+2010-01-05  Helmut Eller  <heller@common-lisp.net>
+
+	Slightly better error message when CMUCL fails to find defstructs.
+
+	* swank-cmucl.lisp (struct-constructor, setf-definitions): Don't
+	use COERCE which gives confusing error message.
+
+2010-01-05  Helmut Eller  <heller@common-lisp.net>
+
+	Add "quit" and "other window prefix" buffer selectors.
+
+	* slime.el (slime-selector-other-window): New variable.
+	(slime-selector): Bind it as need.
+	(def-slime-selector-method): Use the other window if so indicated.
+	([selector] 4): New key binding.
+	([selector] q): New key binding. just abort.
+
+2010-01-05  Helmut Eller  <heller@common-lisp.net>
+
+	Stop the beeping on restart.
+
+	* slime.el (slime-quit-lisp-internal): Don't kill already dead
+	processes.
+
+2010-01-03  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-backend.lisp (frame-call): New function.
+	Returns a string representing a call to the entry point of a frame.
+	* swank-ccl.lisp (frame-call): Implementation of the above.
+	* swank-sbcl.lisp (frame-call): Ditto.
+
+2010-01-03  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* swank.lisp (with-swank-protocol-error-handler): Remove debugging
+	bits.
+
+2010-01-03  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (slime-next-read-or-lose): Call `debug' with the error
+	condition, so we can see what actually caused the losage.
+
+2010-01-03  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (compile-defun [test]): Also test proper notification
+	after reader-error. Additionally: bind font-lock-verbose to nil to
+	prevent annoying font-lock messages during the test.
+
+	* swank-sbcl.lisp (signal-compiler-condition): Make sure
+	READER-ERROR comes before ERROR in typecase.
+	(swank-compile-file): Remove handling FATAL-COMPILER-HANDLER
+	because a) this handling prevents sbcl from printing the
+	diagnostics to the repl, and b) sbcl itself should handle this and
+	translate it into proper return value for compile-file.
+
+2009-12-23  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (complete-symbol [test]): Fix test case.
+
+2009-12-22  Helmut Eller  <heller@common-lisp.net>
+
+	Some new backend functions used for loading image files.
+
+	* swank-backend.lisp (socket-fd, make-fd-stream, dup, exec-image)
+	(command-line-args): New functions.
+	* swank-cmucl.lisp: Impemented.
+	* swank-cmucl.lisp (reset-sigio-handlers): New function.
+	(save-image): Fix quoting bug.
+
+	* swank.lisp (clear-event-history): New functoin.
+	(interactive-eval, eval-region): Don't use FRESH-LINE.
+
+2009-12-21  Tobias C. Rittweiler <tcr@freebits.de>
+
+	* slime.el (slime-at-list-p): Deleted.
+	(slime-at-expression-p): Moved to slime-package-fu.
+	(slime-forward-blanks): Deleted. Use `(skip-chars-forward
+	"[:space:]")' instead.
+	(slime-forward-any-comment): Deleted.
+	(slime-reader-conditionals-regexp): Make a constant so it's
+	inlined.
+	(slime-unknown-feature-expression): Make it an error.
+
+2009-12-19  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-backend.lisp (defpackage): export with-symbol and
+	replace its fully qualified usage everywhere.
+
 2009-12-17  Tobias C. Rittweiler <tcr@freebits.de>
 
 	* slime.el (slime-edit-uses-xrefs): New variable. For contribs to
