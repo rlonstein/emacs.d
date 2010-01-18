@@ -11,9 +11,16 @@
 ;(require 'swank-clojure)
 
 (setq slime-lisp-implementations
-      '((sbcl ("/opt/local/bin/sbcl"))
-        (clozure ("/Users/lonstein/clozure-1.4/scripts/ccl"))
-        (ecl ("/opt/local/bin/ecl"))))
+      (cond (+running-osx+
+             '((sbcl ("/opt/local/bin/sbcl"))
+               (clozure ("/Users/lonstein/clozure-1.4/scripts/ccl"))
+               (ecl ("/opt/local/bin/ecl"))))
+            (+running-bsd+
+             '((sbcl ("/usr/local/bin/sbcl"))
+               (ecl ("/usr/local/bin/ecl"))))
+            (+running-linux+
+             '((sbcl ("/usr/local/bin/sbcl"))))
+            (t '((sbcl ("sbcl"))))))
 ;        (clojure ("/Users/lonstein/clojure/clojure.sh")  :init swank-clojure-init)
 
 (require 'slime-autoloads)

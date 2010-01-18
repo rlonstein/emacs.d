@@ -19,6 +19,7 @@
 (defconst +running-carbon-emacs+ (featurep 'mac-carbon))
 (defconst +running-windows+ (equal 'windows system-type))
 (defconst +running-bsd+     (equal 'berkeley-unix system-type))
+(defconst +running-linux+   (equal 'gnu/linux system-type))
 (defconst +is-employer-host+ (cond
 			    ((file-directory-p (expand-file-name "/ms/dev/")) t)
 			    (+running-osx+ nil)
@@ -30,8 +31,7 @@
   (concat +homedir+ "/"
           (cond (+is-employer-host+
                  (if +running-windows+ "elisp") "/.custom/elisp")
-                (+running-bsd+      ".emacs.d")
-                (+running-osx+      ".emacs.d")
+                ((or +running-bsd+ +running-osx+ +running-linux+) ".emacs.d")
                 (t                  "emacsen"))))
 
 (defconst +init-file-path+ (file-name-directory user-init-file))
