@@ -19,7 +19,7 @@
              '((sbcl ("/usr/local/bin/sbcl"))
                (ecl ("/usr/local/bin/ecl"))))
             (+running-linux+
-             '((sbcl ("/usr/local/bin/sbcl"))))
+             '((sbcl ("/usr/bin/sbcl"))))
             (t '((sbcl ("sbcl"))))))
 ;        (clojure ("/Users/lonstein/clojure/clojure.sh")  :init swank-clojure-init)
 
