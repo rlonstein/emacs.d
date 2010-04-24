@@ -464,13 +464,21 @@ joined together."))
   "SLIME Read-Eval-Print-Loop."
   (slime-output-buffer))
 
+(define-minor-mode slime-repl-map-mode
+  "Minor mode which makes slime-repl-mode-map available.
+\\{slime-repl-mode-map}"
+  nil
+  nil
+  slime-repl-mode-map)
+
 (defun slime-repl-mode () 
   "Major mode for interacting with a superior Lisp.
 \\{slime-repl-mode-map}"
   (interactive)
   (kill-all-local-variables)
   (setq major-mode 'slime-repl-mode)
-  (use-local-map slime-repl-mode-map)
+  (slime-editing-mode 1)
+  (slime-repl-map-mode 1)
   (lisp-mode-variables t)
   (set (make-local-variable 'lisp-indent-function)
        'common-lisp-indent-function)
@@ -492,7 +500,6 @@ joined together."))
        'slime-repl-mode-beginning-of-defun)
   (set (make-local-variable 'end-of-defun-function) 
        'slime-repl-mode-end-of-defun)
-  (slime-editing-mode 1)
   (slime-run-mode-hooks 'slime-repl-mode-hook))
 
 (defun slime-repl-buffer (&optional create connection)
@@ -1437,18 +1444,27 @@ expansion will be added to the REPL's history.)"
 (defun slime-call-defun ()
   "Insert a call to the toplevel form defined around point into the REPL."
   (interactive)
-  (flet ((insert-call (symbol)
+  (flet ((insert-call (symbol &key (function t)
+                              defclass)
            (let* ((qualified-symbol-name (slime-qualify-cl-symbol-name symbol))
                   (symbol-name (slime-cl-symbol-name qualified-symbol-name))
                   (symbol-package (slime-cl-symbol-package qualified-symbol-name))
-                  (function-call 
-                   (format "(%s " (if (equalp (slime-lisp-package) symbol-package)
-                                      symbol-name
-                                      qualified-symbol-name))))
+                  (call (if (equalp (slime-lisp-package) symbol-package)
+                            symbol-name
+                            qualified-symbol-name)))
              (slime-switch-to-output-buffer)
              (goto-char slime-repl-input-start-mark)
-             (insert function-call)
-             (save-excursion (insert ")")))))           
+             (insert (if function
+                         "("
+                         " "))
+             (if defclass
+                 (insert "make-instance '"))
+             (insert call)
+             (when function
+               (insert " ")
+               (save-excursion (insert ")")))
+             (unless function
+               (goto-char slime-repl-input-start-mark)))))           
     (let ((toplevel (slime-parse-toplevel-form)))
       (if (symbolp toplevel)
           (error "Not in a function definition")
@@ -1458,6 +1474,10 @@ expansion will be added to the REPL's history.)"
             ((:defmethod symbol &rest args)
              (declare (ignore args))
              (insert-call symbol))
+            (((:defparameter :defvar :defconstant) symbol)
+             (insert-call symbol :function nil))
+            (((:defclass) symbol)
+             (insert-call symbol :defclass t))
             (t
              (error "Not in a function definition")))))))
 
@@ -1519,6 +1539,14 @@ expansion will be added to the REPL's history.)"
   (interactive)
   (let ((slime-dispatching-connection (slime-connection-at-point)))
     (switch-to-buffer (slime-output-buffer))))
+
+(defun slime-repl-inside-string-or-comment-p ()
+  (save-restriction
+    (when (and (boundp 'slime-repl-input-start-mark)
+               slime-repl-input-start-mark
+               (>= (point) slime-repl-input-start-mark))
+      (narrow-to-region slime-repl-input-start-mark (point)))
+    (slime-inside-string-or-comment-p)))
 
 (defvar slime-repl-easy-menu
   (let ((C '(slime-connected-p)))

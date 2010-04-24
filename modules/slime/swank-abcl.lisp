@@ -95,6 +95,8 @@
    standard-slot-definition ;;dummy
    cl:method
    cl:standard-class
+   #+#.(swank-backend:with-symbol 'compute-applicable-methods-using-classes 'mop)
+   mop::compute-applicable-methods-using-classes
    ;; standard-class readers
    mop::class-default-initargs
    mop::class-direct-default-initargs
@@ -390,6 +392,8 @@
 
 (in-package :swank-backend)
 
+(defvar *abcl-signaled-conditions*)
+
 (defun handle-compiler-warning (condition)
   (let ((loc (when (and jvm::*compile-file-pathname* 
                         system::*source-position*)
@@ -416,11 +420,10 @@
                                  (list :file (namestring *compile-filename*))
                                  (list :position 1)))))))))
 
-(defvar *abcl-signaled-conditions*)
-
 (defimplementation swank-compile-file (input-file output-file
-                                       load-p external-format)
-  (declare (ignore external-format))
+                                       load-p external-format
+                                       &key policy)
+  (declare (ignore external-format policy))
   (let ((jvm::*resignal-compiler-warnings* t)
         (*abcl-signaled-conditions* nil))
     (handler-bind ((warning #'handle-compiler-warning))
@@ -514,47 +517,64 @@ part of *sysdep-pathnames* in swank.loader.lisp.
 |#
 
 ;;;; Inspecting
+(defmethod emacs-inspect ((o t))
+  (let ((parts (sys:inspected-parts o)))
+    `("The object is of type " ,(symbol-name (type-of o)) "." (:newline)
+      ,@(if parts
+           (loop :for (label . value) :in parts
+              :appending (label-value-line label value))
+            (list "No inspectable parts, dumping output of CL:DESCRIBE:" '(:newline) 
+                  (with-output-to-string (desc) (describe o desc)))))))
 
 (defmethod emacs-inspect ((slot mop::slot-definition))
-          `("Name: " (:value ,(mop::%slot-definition-name slot))
-            (:newline)
-            "Documentation:" (:newline)
-            ,@(when (slot-definition-documentation slot)
-                `((:value ,(slot-definition-documentation slot)) (:newline)))
-            "Initialization:" (:newline)
-            "  Args: " (:value ,(mop::%slot-definition-initargs slot)) (:newline)
-            "  Form: "  ,(if (mop::%slot-definition-initfunction slot)
-                             `(:value ,(mop::%slot-definition-initform slot))
-                             "#<unspecified>") (:newline)
-            "  Function: " (:value ,(mop::%slot-definition-initfunction slot))
-            (:newline)))
+  `("Name: " (:value ,(mop::%slot-definition-name slot))
+             (:newline)
+             "Documentation:" (:newline)
+             ,@(when (slot-definition-documentation slot)
+                     `((:value ,(slot-definition-documentation slot)) (:newline)))
+             "Initialization:" (:newline)
+             "  Args: " (:value ,(mop::%slot-definition-initargs slot)) (:newline)
+             "  Form: "  ,(if (mop::%slot-definition-initfunction slot)
+                              `(:value ,(mop::%slot-definition-initform slot))
+                              "#<unspecified>") (:newline)
+                              "  Function: " (:value ,(mop::%slot-definition-initfunction slot))
+                              (:newline)))
 
 (defmethod emacs-inspect ((f function))
-          `(,@(when (function-name f)
-                    `("Name: " 
-                      ,(princ-to-string (function-name f)) (:newline)))
-            ,@(multiple-value-bind (args present) 
-                                   (sys::arglist f)
-                                   (when present `("Argument list: " ,(princ-to-string args) (:newline))))
-            (:newline)
-            #+nil,@(when (documentation f t)
-                         `("Documentation:" (:newline) ,(documentation f t) (:newline)))
-            ,@(when (function-lambda-expression f)
-                    `("Lambda expression:" 
-                      (:newline) ,(princ-to-string (function-lambda-expression f)) (:newline)))))
+  `(,@(when (function-name f)
+            `("Name: " 
+              ,(princ-to-string (function-name f)) (:newline)))
+      ,@(multiple-value-bind (args present) 
+                             (sys::arglist f)
+                             (when present `("Argument list: " ,(princ-to-string args) (:newline))))
+      (:newline)
+      #+nil,@(when (documentation f t)
+                   `("Documentation:" (:newline) ,(documentation f t) (:newline)))
+      ,@(when (function-lambda-expression f)
+              `("Lambda expression:" 
+                (:newline) ,(princ-to-string
+                             (function-lambda-expression f)) (:newline)))))
 
-#|
-
-(defmethod emacs-inspect ((o t))
-  (let* ((class (class-of o))
-         (slots (mop::class-slots class)))
-            (mapcar (lambda (slot)
-                      (let ((name (mop::slot-definition-name slot)))
-                        (cons (princ-to-string name)
-                              (slot-value o name))))
-                    slots)))
-|#
-
+;;; Although by convention toString() is supposed to be a
+;;; non-computationally expensive operation this isn't always the
+;;; case, so make its computation a user interaction.
+(defparameter *to-string-hashtable* (make-hash-table))
+(defmethod emacs-inspect ((o java:java-object))
+    (let ((to-string (lambda ()
+                      (handler-case
+                          (setf (gethash o *to-string-hashtable*)
+                                         (java:jcall "toString" o))
+                        (t (e)
+                          (setf (gethash o *to-string-hashtable*)
+                                         (format nil "Could not invoke toString(): ~A"
+                                                 e)))))))
+      (append
+       (if (gethash o *to-string-hashtable*)
+           (label-value-line "toString()" (gethash o *to-string-hashtable*))
+           `((:action "[compute toString()]" ,to-string) (:newline)))
+       (loop :for (label . value) :in (sys:inspected-parts o)
+          :appending (label-value-line label value)))))
+  
 ;;;; Multithreading
 
 #+#.(cl:if (cl:find-package :threads) '(:and) '(:or))

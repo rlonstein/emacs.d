@@ -17,7 +17,6 @@
 ;;
 
 (require 'slime)
-(slime-require :swank-clipboard)
 
 (define-derived-mode slime-clipboard-mode fundamental-mode
   "Slime-Clipboard"
@@ -65,8 +64,8 @@
 		    #'slime-clipboard-display-entries))
 
 (defun slime-clipboard-display-entries (entries)
-  (slime-with-popup-buffer ("*Slime Clipboard*")
-    (slime-clipboard-mode)
+  (slime-with-popup-buffer ("*Slime Clipboard*"
+                            :mode 'slime-clipboard-mode)
     (slime-clipboard-insert-entries entries)))
 
 (defun slime-clipboard-insert-entries (entries)
@@ -165,5 +164,8 @@
   (slime-clipboard-add-internal 
    `(:sldb ,(sldb-frame-number-at-point) 
 	   ,(sldb-var-number-at-point))))
+
+(defun slime-clipboard-init ()
+  (slime-require :swank-clipboard))
 
 (provide 'slime-clipboard)

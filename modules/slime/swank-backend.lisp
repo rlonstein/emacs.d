@@ -34,6 +34,7 @@
            #:declaration-arglist
            #:type-specifier-arglist
            #:with-struct
+           #:when-let
            ;; interrupt macro for the backend
            #:*pending-slime-interrupts*
            #:check-slime-interrupts
@@ -168,7 +169,9 @@ Backends implement these functions using DEFIMPLEMENTATION."
   (assert (every #'symbolp args) ()
           "Complex lambda-list not supported: ~S ~S" name args)
   `(progn
-     (setf (get ',name 'implementation) (lambda ,args ,@body))
+     (setf (get ',name 'implementation)
+           ;; For implicit BLOCK. FLET because of interplay w/ decls.
+           (flet ((,name ,args ,@body)) #',name))
      (if (member ',name *interface-functions*)
          (setq *unimplemented-interfaces*
                (remove ',name *unimplemented-interfaces*))
@@ -251,9 +254,14 @@ EXCEPT is a list of symbol names which should be ignored."
                      (t (error "Malformed syntax in WITH-STRUCT: ~A" name))))
           ,@body)))))
 
+(defmacro when-let ((var value) &body body)
+  `(let ((,var ,value))
+     (when ,var ,@body)))
+
 (defun with-symbol (name package)
   "Generate a form suitable for testing with #+."
-  (if (find-symbol (string name) (string package))
+  (if (and (find-package package)
+           (find-symbol (string name) package))
       '(:and)
       '(:or)))
 
@@ -335,6 +343,12 @@ Return old signal handler."
   "Return a short name for the Lisp implementation."
   (lisp-implementation-type))
 
+(definterface lisp-implementation-program ()
+  "Return the argv[0] of the running Lisp process, or NIL."
+  (let ((file (car (command-line-args))))
+    (when (and file (probe-file file))
+      (namestring (truename file)))))
+
 (definterface socket-fd (socket-stream)
   "Return the file descriptor for SOCKET-STREAM.")
 
@@ -355,7 +369,8 @@ the new image.
 This is thin wrapper around exec(3).")
 
 (definterface command-line-args ()
-  "Return a list of strings as passed by the OS.")
+  "Return a list of strings as passed by the OS."
+  nil)
 
 
 ;; pathnames are sooo useless
@@ -416,18 +431,23 @@ rebind *DEFAULT-PATHNAME-DEFAULTS* which may improve the recording of
 source information.
 
 If POLICY is supplied, and non-NIL, it may be used by certain
-implementations to compile with a debug optimization quality of its
+implementations to compile with optimization qualities of its
 value.
 
 Should return T on successfull compilation, NIL otherwise.
 ")
 
 (definterface swank-compile-file (input-file output-file load-p 
-                                             external-format)
+                                             external-format
+                                             &key policy)
    "Compile INPUT-FILE signalling COMPILE-CONDITIONs.
 If LOAD-P is true, load the file after compilation.
 EXTERNAL-FORMAT is a value returned by find-external-format or
 :default.
+
+If POLICY is supplied, and non-NIL, it may be used by certain
+implementations to compile with optimization qualities of its
+value.
 
 Should return OUTPUT-TRUENAME, WARNINGS-P and FAILURE-p
 like `compile-file'")
@@ -777,6 +797,11 @@ The allowed elements are of the form:
   (declare (ignore condition))
   '())
 
+(definterface gdb-initial-commands ()
+  "List of gdb commands supposed to be executed first for the
+   ATTACH-GDB restart."
+  nil)
+
 (definterface activate-stepping (frame-number)
   "Prepare the frame FRAME-NUMBER for stepping.")
 
@@ -816,9 +841,27 @@ returns.")
   hints)
 
 (defstruct (:error (:type list) :named (:constructor)) message)
-(defstruct (:file (:type list) :named (:constructor)) name)
-(defstruct (:buffer (:type list) :named (:constructor)) name)
+
+;;; Valid content for BUFFER slot
+(defstruct (:file       (:type list) :named (:constructor)) name)
+(defstruct (:buffer     (:type list) :named (:constructor)) name)
+(defstruct (:etags-file (:type list) :named (:constructor)) filename)
+
+;;; Valid content for POSITION slot
 (defstruct (:position (:type list) :named (:constructor)) pos)
+(defstruct (:tag      (:type list) :named (:constructor)) tag1 tag2)
+
+(defmacro converting-errors-to-error-location (&body body)
+  "Catches errors during BODY and converts them to an error location."
+  (let ((gblock (gensym "CONVERTING-ERRORS+")))
+    `(block ,gblock
+       (handler-bind ((error
+                       #'(lambda (e)
+                            (if *debug-swank-backend*
+                                nil     ;decline
+                                (return-from ,gblock
+                                  (make-error-location e))))))
+         ,@body))))
 
 (defun make-error-location (datum &rest args)
   (cond ((typep datum 'condition)
@@ -992,6 +1035,10 @@ output of CL:DESCRIBE."
      (:newline) (:newline)
      ,(with-output-to-string (desc) (describe object desc))))
 
+(definterface eval-context (object)
+  "Return a list of bindings corresponding to OBJECT's slots."
+  (declare (ignore object))
+  '())
 
 ;;; Utilities for inspector methods.
 ;;; 

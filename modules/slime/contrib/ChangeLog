@@ -1,3 +1,227 @@
+2010-04-18  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-presentations.el
+	(slime-repl-grab-old-output,slime-copy-or-inspect-presentation-at-mouse):
+	If the presentation at point is no longer available, remove
+	presentation properties from the object.
+	* swank-presentations.lisp (lookup-presented-object): defun->defslimefun.
+
+2010-04-06  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-c-p-c.el (slime-complete-symbol*-fancy-bit): There is no
+	slime-space-information-p variable anymore.
+	Patch by Steven H. Margolis.
+
+2010-04-06  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-sprof.el (slime-sprof-format): Remove references to the
+	removed code.
+
+2010-04-05  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-repl.el (slime-repl-inside-string-or-comment-p): New
+	function, when in the REPL prompt, narrow the search to the
+	prompt, otherwise stray " from the previous prompts
+	or outputs may confuse slime-inside-string-or-comment-p.
+
+	* slime-autodoc.el (slime-autodoc): Use
+	slime-repl-inside-string-or-comment-p when fbound.
+
+2010-04-05  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-autodoc.el (slime-autodoc-manually): Rename from
+	slime-autodoc-full.
+	Like slime-autodoc, but when called twice,
+	or after slime-autodoc was already automatically called,
+	display multiline arglist.
+
+2010-04-05  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-autodoc.el (slime-autodoc-full): New command,
+	displays multiline arglists. Bound to C-c C-d a.
+	(slime-make-autodoc-rpc-form): Don't send
+	:print-lines to autodoc, always use the actual width for
+	:print-right-margin, remove newlines on formatting when needed.
+	(slime-autodoc): Add optional parameter multilinep defaulted to
+	slime-autodoc-use-multiline-p, pass it to slime-format-autodoc.
+
+	* swank-arglists.lisp (autodoc, decoded-arglist-to-string): remove
+	print-lines parameter, it's not used anymore.
+
+2010-04-05  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-sprof.el (slime-sprof-browser): Use slime-with-popup-buffer for
+	buffer creation.
+
+2010-04-03  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-arglists.lisp (print-decoded-arglist): prin1-arg -> print-arg.
+
+2010-04-03  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-arglists.lisp (print-decoded-arglist): Print keywords using
+	princ again.
+
+2010-04-03  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-arglists.lisp (arglist-dispatch): Handle method qualifiers.
+	(print-arg): Renamed from princ-arg.
+	(prin1-arg): Removed.
+	* slime-autodoc.el (autodoc.1): Add test-case for method qualifiers
+
+2010-03-30  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-arglists.lisp (*arglist-show-packages*): New
+	customization variable, when non-nil show qualified symbols.
+	(with-arglist-io-syntax): new macro for respecting the above variable.
+	(decoded-arglist-to-string, decoded-arglist-to-template-string): Use
+	the macro above.
+
+2010-03-23  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	Do not do an unnecessary autodoc RPC request in case we're not
+	actually inside a form.
+
+	* slime-autodoc.el (slime-make-autodoc-rpc-form): Return nil if
+	not inside a form.
+	(slime-autodoc): Adapted accordingly to propagate nil to eldoc.
+
+2010-03-20  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-c-p-c.el, slime-fuzzy.el: Don't define keys on slime-repl-mode-map
+	if slime-repl isn't loaded.
+	* slime-presentations.el: Refuse to load if slime-repl isn't loaded.
+	Reported by Robert Goldman.
+
+2010-03-13  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-asdf.el: use slime-from-lisp-filename so that slime-tramp can work.
+	Reported by Peter Stirling.
+
+2010-03-12  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-arglists.lisp (extract-local-op-arglists (eql 'labels)):
+	Fix (labels ((name |))).
+
+2010-03-09  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-arglists.lisp (arglist-ref): Don't error if a &key name isn't
+	a :keyword symbol. And also handle non-:keyword keyword parameters.
+
+2010-03-09  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-presentations.lisp (inspect-presentation): Throw an error when
+	trying to access unrecorded object.
+	(lookup-presented-object-or-lose): Rename from `get-repl-result'.
+
+2010-03-09  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-repl.el (slime-call-defun): When on defclass insert
+	 (make-instance 'name).
+
+2010-03-08  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-fancy-inspector.lisp (all-slots-for-inspector): Sort class
+	names when grouping by inheritance the same way as slots are sorted.
+
+2010-03-08  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-repl.el (slime-call-defun): Work also on defvar/defparameter.
+
+2010-03-07  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-fancy-inspector.lisp (stable-sort-by-inheritance): Remove
+	copy-seq, unnecessarily put in the previous commit.
+
+2010-03-07  Stas Boukarev  <stassats@gmail.com>
+
+	* swank-fancy-inspector.lisp: Add buttons
+	for selecting default sorting order and default grouping method of
+	slots of a class.
+
+	(all-slots-for-inspector): Implement the above feature.
+	Move the default method from :method option of the GF to a separate
+	defmethod, this method is quite large and :method eats space for
+	indentation.
+	(*inspector-slots-default-order*):
+	New variable, accepts :unsorted and :alphabetically
+	(*inspector-slots-default-grouping*): New variable,
+	accepts :all and :inheritance.
+
+2010-03-07  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* swank-arglists.lisp (extract-local-op-arglists): Fix for
+	`(labels ((foo (x) ...)|'.
+
+	* slime-autodoc.el (autodoc.1): Add test cases.
+
+2010-02-20  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-fancy.el: Call init function for fancy
+	inspector. Necessary due to 2010-02-15.
+
+
+2010-02-19  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-fuzzy.el (slime-fuzzy-choices-buffer): Make connection
+	buffer-local, otherwise `swank:fuzzy-completion-selected' will
+	be sent to the default connection.
+
+2010-02-17  Helmut Eller  <heller@common-lisp.net>
+
+	Fix bugs when *inferior-buffers* doesn't exist.
+
+	* inferior-slime.el (inferior-slime-start-transcript)
+	(inferior-slime-stop-transcript): Make sure the buffer exists.
+
+2010-02-15  Tobias C. Rittweiler  <tcr@freebits.de>
+
+	* slime-asdf.el, slime-autodoc.el, slime-c-p-c.el,
+	slime-clipboard.el, slime-fancy-inspector.el, slime-fuzzy,el,
+	slime-indentation.el, slime-motd.el,
+	slime-presentation-streams.el, slime-presentations.el,
+	slime-sbcl-exts, slime-snapshot.el, slime-sprof.el:
+
+	Make sure that contrib code does not try to load in swank code
+	asynchronously but use `slime-require' instead; also make sure to
+	move the `slime-require' into the contribs' init function.
+
+2010-01-31  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-repl.el (slime-repl-mode): Don't do
+	 (use-local-map slime-repl-mode-map) because it will be used
+	through slime-repl-map-mode minor mode.
+	This fixes double entries in the menu bar.
+	Reported by RaceCondition from #lisp.
+
+2010-01-25  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-package-fu.el (slime-goto-next-export-clause): Use
+	" \n\t" for `skip-chars-forward' instead of [:alpha:],
+	because it doesn't work for some reason.
+	(slime-search-exports-in-defpackage): take #:symbol and :symbol
+	into account too.
+
+2010-01-14  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-repl.el: Revert the previous change because it
+	didn't work in some cases.
+	(slime-repl-map-mode): New minor mode which sole purpose is to
+	enable `slime-repl-mode-map'.
+	(slime-repl-mode): Enable `slime-repl-map-mode' after enabling
+	`slime-editing-map'.
+	This will finally allow `slime-repl-mode-map' to take precedence of
+	`slime-editing-map'.
+
+2010-01-14  Stas Boukarev  <stassats@gmail.com>
+
+	* slime-repl.el (slime-repl-mode-map): Use both
+	`slime-editing-map' and `lisp-mode-map' as parent keymaps.
+	(slime-repl-mode): Don't use `slime-editing-mode' because
+	its keymap is already used above.
+	That way `slime-repl-mode-map' takes precedence of
+	`slime-editing-map'.
+
 2010-01-08  Stas Boukarev  <stassats@gmail.com>
 
 	* swank-asdf.lisp: Doing list-all-systems-in-central-registry

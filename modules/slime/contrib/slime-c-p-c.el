@@ -92,16 +92,15 @@ If false, move point to the end of the inserted text."
                (cdr (read arglist))))
             (function-call-position-p
              (save-excursion
-                (backward-sexp)
-                (equal (char-before) ?\())))
+               (backward-sexp)
+               (equal (char-before) ?\())))
         (when function-call-position-p
           (if (null args)
               (insert-and-inherit ")")
-            (insert-and-inherit " ")
-            (when (and slime-space-information-p
-                       (slime-background-activities-enabled-p)
-                       (not (minibuffer-window-active-p (minibuffer-window))))
-              (slime-echo-arglist))))))))
+              (insert-and-inherit " ")
+              (when (and (slime-background-activities-enabled-p)
+                         (not (minibuffer-window-active-p (minibuffer-window))))
+                (slime-echo-arglist))))))))
 
 (defun* slime-contextual-completions (beg end) 
   "Return a list of completions of the token from BEG to END in the
@@ -170,19 +169,22 @@ This is a superset of the functionality of `slime-insert-arglist'."
 (defvar slime-c-p-c-init-undo-stack nil)
 
 (defun slime-c-p-c-init ()
+  (slime-require :swank-c-p-c)
   ;; save current state for unload
   (push 
    `(progn
       (setq slime-complete-symbol-function ',slime-complete-symbol-function)
       (remove-hook 'slime-connected-hook 'slime-c-p-c-on-connect)
-      (define-key slime-mode-map "\C-c\C-s"
-	',(lookup-key slime-mode-map "\C-c\C-s"))
-      (define-key slime-repl-mode-map "\C-c\C-s"
-	',(lookup-key slime-repl-mode-map "\C-c\C-s")))
+      ,@(when (featurep 'slime-repl)
+              `((define-key slime-mode-map "\C-c\C-s"
+                  ',(lookup-key slime-mode-map "\C-c\C-s"))
+                (define-key slime-repl-mode-map "\C-c\C-s"
+                  ',(lookup-key slime-repl-mode-map "\C-c\C-s")))))
    slime-c-p-c-init-undo-stack)
   (setq slime-complete-symbol-function 'slime-complete-symbol*)
   (define-key slime-mode-map "\C-c\C-s" 'slime-complete-form)
-  (define-key slime-repl-mode-map "\C-c\C-s" 'slime-complete-form))
+  (when (featurep 'slime-repl)
+    (define-key slime-repl-mode-map "\C-c\C-s" 'slime-complete-form)))
 
 (defun slime-c-p-c-unload ()
   (while slime-c-p-c-init-undo-stack

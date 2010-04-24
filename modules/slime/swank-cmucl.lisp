@@ -405,8 +405,9 @@ NIL if we aren't compiling from a buffer.")
       (funcall function))))
 
 (defimplementation swank-compile-file (input-file output-file
-                                       load-p external-format)
-  (declare (ignore external-format))
+                                       load-p external-format
+                                       &key policy)
+  (declare (ignore external-format policy))
   (clear-xref-info input-file)
   (with-compilation-hooks ()
     (let ((*buffer-name* nil)
@@ -911,20 +912,16 @@ See CODE-LOCATION-STREAM-POSITION."
 regular functions, generic functions, methods and macros.
 NAME can any valid function name (e.g, (setf car))."
   (let ((macro?    (and (symbolp name) (macro-function name)))
-        (special?  (and (symbolp name) (special-operator-p name)))
         (function? (and (ext:valid-function-name-p name)
                         (ext:info :function :definition name)
                         (if (symbolp name) (fboundp name) t))))
     (cond (macro? 
            (list `((defmacro ,name)
                    ,(function-location (macro-function name)))))
-          (special?
-           (list `((:special-operator ,name) 
-                   (:error ,(format nil "Special operator: ~S" name)))))
           (function?
            (let ((function (fdefinition name)))
              (if (genericp function)
-                 (generic-function-definitions name function)
+                 (gf-definitions name function)
                  (list (list `(function ,name)
                              (function-location function)))))))))
 
@@ -1028,7 +1025,7 @@ Signal an error if no constructor can be found."
 
 ;;;;;; Generic functions and methods
 
-(defun generic-function-definitions (name function)
+(defun gf-definitions (name function)
   "Return the definitions of a generic function and its methods."
   (cons (list `(defgeneric ,name) (gf-location function))
         (gf-method-definitions function)))
@@ -2141,6 +2138,19 @@ The `symbol-value' of each element is a type tag.")
     (alien::alien-record-type (inspect-alien-record alien))
     (alien::alien-pointer-type (inspect-alien-pointer alien))
     (t (cmucl-inspect alien))))
+
+(defimplementation eval-context (obj)
+  (cond ((typep (class-of obj) 'structure-class)
+         (let* ((dd (kernel:layout-info (kernel:layout-of obj)))
+                (slots (kernel:dd-slots dd)))
+           (list* (cons '*package* 
+                        (symbol-package (if slots 
+                                            (kernel:dsd-name (car slots))
+                                            (kernel:dd-name dd))))
+                  (loop for slot in slots collect 
+                        (cons (kernel:dsd-name slot)
+                              (funcall (kernel:dsd-accessor slot) obj))))))))
+                 
 
 ;;;; Profiling
 (defimplementation profile (fname)
