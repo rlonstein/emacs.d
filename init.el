@@ -103,8 +103,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
                                                 "~/.emacs.d/modules/magit"
 						"~/.emacs.d/modules/org/lisp"
 						"~/.emacs.d/modules/org/contrib/lisp"
-						"~/.emacs.d/modules/org/xemacs"
-						"~/.emacs.d/modules/color-theme"))
+                                                "~/.emacs.d/modules/color-theme"))
 			  (+running-osx+ '("/Users/lonstein/.emacs.d/misc"
 					   "/Users/lonstein/.emacs.d/modules"
 					   "/Users/lonstein/.emacs.d/modules/slime"
@@ -113,6 +112,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
                                            "/Users/lonstein/.emacs.d/modules/magit"
 					   "/Users/lonstein/.emacs.d/modules/org/lisp"
 					   "/Users/lonstein/.emacs.d/modules/org/contrib/lisp"
+                                           "/Users/lonstein/.emacs.d/modules/yasnippet"
 					   "/opt/local/share/emacs/site-lisp/w3m"))
                        (+running-windows+ '("C:\elisp"
                                           "C:\elisp\misc"
@@ -387,6 +387,13 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(when (rel-local-module-enabled-p "yasnippet")
+  (require 'yasnippet)
+  (yas/initialize)
+  (yas/load-directory
+   (concat +local-elisp-subpath+ "/modules/yasnippet/snippets")))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; custom key bindings
@@ -483,7 +490,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
  auto-save-interval 1024
  auto-save-timeout 120
  column-number-mode t                  ; show columns
- default-abbrev-mode t                 ; abbrev everywhere
+; default-abbrev-mode t                 ; abbrev everywhere
  default-indent-tabs-mode nil          ; no tabs, always spaces
  history-length 100
  inhibit-startup-message t             ; don't annoy me at startup
@@ -535,7 +542,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 
-(quietly-read-abbrev-file) ; reads the abbreviations file on startup
+;(quietly-read-abbrev-file) ; reads the abbreviations file on startup
 
 (auto-compression-mode 1)                   ; (de)compress on the fly
 
@@ -641,7 +648,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 (define-key global-map (kbd "C-M-{") 'backward-paragraph)
 (define-key global-map (kbd "C-M-}") 'forward-paragraph)
-(define-key global-map (kbd "C-M-'") 'abbrev-prefix-mark)
+;(define-key global-map (kbd "C-M-'") 'abbrev-prefix-mark)
 
 (define-key global-map (kbd "M-\"") 'myskeleton-pair-insert)
 (define-key global-map (kbd "M-`")  'myskeleton-pair-insert)

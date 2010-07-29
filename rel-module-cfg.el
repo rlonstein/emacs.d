@@ -14,11 +14,11 @@
       :name "misc"
       :path "/misc")
     ,(rel-new-module-entry
-      :name "remember"
-      :path "/modules/remember")
-    ,(rel-new-module-entry
       :name "org"
       :path "/modules/org")
+    ,(rel-new-module-entry
+      :name "yasnippet"
+      :path "/modules/yasnippet")
     ,(rel-new-module-entry
       :name "org-xemacs"
       :load +running-xemacs+
