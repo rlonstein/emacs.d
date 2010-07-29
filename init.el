@@ -24,9 +24,12 @@
 			    ((file-directory-p (expand-file-name "/ms/dev/")) t)
 			    (+running-osx+ nil)
 			    (t nil)))
-
-(defconst +homedir+ (expand-file-name "~")) ; there's no place like $HOME
-
+ 
+(defconst +homedir+ (expand-file-name "~")) ; there's no place like $HOME 
+(defconst +perl+ 
+  (cond (+is-employer-host+ "/ms/dist/perl5/bin/perl5.8")
+        (+running-osx+ "/opt/local/bin/perl")
+        (t "perl")))
 (defconst +local-elisp-subpath+
   (concat +homedir+ "/"
           (cond (+is-employer-host+
@@ -35,6 +38,8 @@
                 (t                  "emacsen"))))
 
 (defconst +init-file-path+ (file-name-directory user-init-file))
+
+(defvar *is-clbuild* nil) ; toggle in clbuild/.start-slime.el
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -92,8 +97,10 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 (let ((my-path-list (cond (+is-employer-host+ '("~/.emacs.d/"
                                                 "~/.emacs.d/misc"
+                                                "~/.emacs.d/modules/"
 						"~/.emacs.d/modules/slime"
 						"~/.emacs.d/modules/remember"
+                                                "~/.emacs.d/modules/magit"
 						"~/.emacs.d/modules/org/lisp"
 						"~/.emacs.d/modules/org/contrib/lisp"
 						"~/.emacs.d/modules/org/xemacs"
@@ -103,6 +110,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 					   "/Users/lonstein/.emacs.d/modules/slime"
 					   "/Users/lonstein/.emacs.d/modules/slime/contrib"
 					   "/Users/lonstein/.emacs.d/modules/remember"
+                                           "/Users/lonstein/.emacs.d/modules/magit"
 					   "/Users/lonstein/.emacs.d/modules/org/lisp"
 					   "/Users/lonstein/.emacs.d/modules/org/contrib/lisp"
 					   "/opt/local/share/emacs/site-lisp/w3m"))
@@ -302,6 +310,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (load "paredit-beta.el")
 (mapc (lambda (hook) (add-hook hook (lambda () (paredit-mode +1))))
       '(lisp-mode-hook
+        lisp-interaction-mode-hook
         emacs-lisp-mode-hook
         scheme-mode-hook
         slime-mode-hook
@@ -323,82 +332,58 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (when (rel-local-module-enabled-p "org")
   (require 'org-install)
   (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-  (eval-after-load "org"
-    '(progn
-      (define-prefix-command 'org-todo-state-map)
-      (define-key org-mode-map "\C-cx" 'org-todo-state-map)
-      (define-key org-todo-state-map "x" #'(lambda nil (interactive) (org-todo "CANCELLED")))
-      (define-key org-todo-state-map "d" #'(lambda nil (interactive) (org-todo "DONE")))
-      (define-key org-todo-state-map "f" #'(lambda nil (interactive) (org-todo "DEFERRED")))
-      (define-key org-todo-state-map "l" #'(lambda nil (interactive) (org-todo "DELEGATED")))
-      (define-key org-todo-state-map "r" #'(lambda nil (interactive) (org-todo "RESCHEDULED")))
-      (define-key org-todo-state-map "s" #'(lambda nil (interactive) (org-todo "STARTED")))
-      (define-key org-todo-state-map "w" #'(lambda nil (interactive) (org-todo "WAITING")))
-      (define-key org-todo-state-map "o" #'(lambda nil (interactive) (org-todo "REOPENED")))
+  (eval-after-load "org-agenda"
+    '(progn 
+       (define-key org-agenda-mode-map "\C-n" 'next-line)
+       (define-key org-agenda-keymap "\C-n" 'next-line)
+       (define-key org-agenda-mode-map "\C-p" 'previous-line)
+       (define-key org-agenda-keymap "\C-p" 'previous-line)))
 
-      (eval-after-load "org-agenda"
-        '(progn
-           (define-key org-agenda-mode-map "\C-n" 'next-line)
-           (define-key org-agenda-keymap "\C-n" 'next-line)
-           (define-key org-agenda-mode-map "\C-p" 'previous-line)
-           (define-key org-agenda-keymap "\C-p" 'previous-line)))
+;      (require 'remember)
+  (require 'org-table)
+  (require 'org-colview)
 
-      (require 'remember)
-      (require 'table)
+;      (add-hook 'remember-mode-hook 'org-remember-apply-template)
 
-      (add-hook 'remember-mode-hook 'org-remember-apply-template)
+  (setq my-org-directory (file-name-as-directory  (concat +homedir+ "/private/org")))
+  (setq diary-file (concat my-org-directory "diary"))
+  (setq org-agenda-files (list (concat my-org-directory "todo.org")))
+  (setq my-org-notes-file (concat my-org-directory "notes.org"))
+  (setq org-capture-templates
+        '(("t" "Todo" entry (file+headline "~/private/org/todo.org" "Tasks")
+           "* TODO %?\n  %u\n%i\n\n")
+          ("c" "On-Call" entry (file+headline "~/private/org/todo.org" "On-Call")
+           "* TODO %?\n  %u\n%i\n\n" :prepend)))
 
-      (setf
-       org-agenda-files (quote ("~/Documents/todo/todo.org"))
-       org-default-notes-file "~/Documents/todo/notes.org"
-       org-agenda-ndays 7
-       org-deadline-warning-days 14
-       org-agenda-show-all-dates t
-       org-agenda-skip-deadline-if-done t
-       org-agenda-skip-scheduled-if-done t
-       org-agenda-include-diary t
-       org-agenda-start-on-weekday nil
-       org-reverse-note-order t
-       org-fast-tag-selection-single-key (quote expert)
-       org-remember-store-without-prompt t
-       org-clock-persist t
-       org-clock-persist-file ".org-clock-save.el"
-       org-clock-in-resume t
-       org-clock-out-when-done t
-       org-clock-out-removes-zero-time-clocks t
-       org-clock-in-switch-to-state "STARTED"
-       org-clock-out-when-done t
-       org-log-done '(state))
+  (setf
+   org-agenda-ndays 7
+   org-deadline-warning-days 14
+   org-agenda-show-all-dates t
+   org-agenda-skip-deadline-if-done t
+   org-agenda-skip-scheduled-if-done t
+   org-agenda-include-diary t
+   org-agenda-start-on-weekday nil
+   org-reverse-note-order t
+   org-fast-tag-selection-single-key (quote expert)
+;       org-remember-store-without-prompt t
+   org-clock-persist t
+   org-clock-persist-file ".org-clock-save.el"
+   org-clock-in-resume t
+   org-clock-out-when-done t
+   org-clock-out-removes-zero-time-clocks t
+   org-clock-in-switch-to-state "STARTED"
+   org-clock-out-when-done t
+   org-log-done '(state)
+   org-clock-in-resume t
+   org-drawers (quote ("PROPERTIES" "LOGBOOK" "CLOCK"))
+   org-clock-into-drawer "CLOCK")
 
-      (setf org-agenda-custom-commands
-            (quote (("d" todo "DELEGATED" nil)
-                    ("c" todo "DONE|DEFERRED|CANCELLED" nil)
-                    ("w" todo "WAITING" nil)
-                    ("W" agenda "" ((org-agenda-ndays 21)))
-                    ("A" agenda ""
-                     ((org-agenda-skip-function
-                       (lambda nil
-                         (org-agenda-skip-entry-if (quote notregexp) "\\=.*\\[#A\\]")))
-                      (org-agenda-ndays 1)
-                      (org-agenda-overriding-header "Today's Priority #A tasks: ")))
-                    ("u" alltodo ""
-                     ((org-agenda-skip-function
-                       (lambda nil
-                         (org-agenda-skip-entry-if (quote scheduled) (quote deadline)
-                                                   (quote regexp) "<[^>\n]+>")))
-                      (org-agenda-overriding-header "Unscheduled TODO entries: "))))))
+  (global-set-key (kbd "C-c o l") 'org-store-link) 
+  (global-set-key (kbd "C-c o a") 'org-agenda)
+  (global-set-key (kbd "C-c o b") 'org-iswitchb)
+  (global-set-key (kbd "C-c o r") 'org-capture)
 
-      (setf org-remember-templates
-            (quote (("Todo" ?t "* TODO %?\n  %u" "~/Documents/todo/todo.org" "Tasks")
-                    ("Note" ?n "* %u %?" "~/Documents/todo/notes.org" "Notes"))))
-      (setf remember-annotation-functions (quote (org-remember-annotation))
-            remember-handler-functions (quote (org-remember-handler)))
-
-      (global-set-key (kbd "C-c o l") 'org-store-link)
-      (global-set-key (kbd "C-c o a") 'org-agenda)
-      (global-set-key (kbd "C-c o r") 'remember)))
-
-  (message "... set up org-mode..."))
+(message "... set up org-mode..."))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -700,5 +685,20 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 (message "Completed load of Ross's customizations.")
 
+(put 'narrow-to-region 'disabled nil)
+
 ; educate me
 (totd)
+x(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(canlock-password "fa4452f31adeb966032f0f069550bab1be88b17e")
+ '(org-agenda-files (quote ("~/Documents/todo/todo.org"))))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
