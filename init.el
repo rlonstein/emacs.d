@@ -689,16 +689,3 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 ; educate me
 (totd)
-x(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(canlock-password "fa4452f31adeb966032f0f069550bab1be88b17e")
- '(org-agenda-files (quote ("~/Documents/todo/todo.org"))))
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- )
