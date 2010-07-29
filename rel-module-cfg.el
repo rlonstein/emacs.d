@@ -24,10 +24,11 @@
       :load +running-xemacs+
       :path "/modules/org/xemacs"
       :exec '(lambda () (require 'noutline)))
-    ,(rel-new-module-entry
-      :name "slime"
-      :path "/modules/slime"
-      :exec '(lambda () (load-file (localize-load-path "/rel-slime-cfg.el"))))
+    ,(if (not *is-clbuild*)
+         (rel-new-module-entry
+          :name "slime"
+          :path "/modules/slime"
+          :exec '(lambda () (load-file (localize-load-path "/rel-slime-cfg.el")))))
     ,(rel-new-module-entry
       :name "/opt/local/share/emacs"
       :load +running-osx+
