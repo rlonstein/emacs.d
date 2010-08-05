@@ -232,6 +232,10 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 (setq javascript-indent-level 4)
 
+;; align-cols
+(require 'align)
+(global-set-key (kbd "C-c f c") 'align-cols)
+
 ;; tramp mode
 (autoload 'tramp "tramp-mode" nil t)
 (setq tramp-default-method "ssh")
@@ -243,6 +247,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
            (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
            (setq js2-basic-offset 2)
            (setq js2-use-font-lock-faces t)))
+
 ;;
 ;; Luke Gorrie's Chop -- interactive binary search for a line in a window
 ;;
@@ -444,7 +449,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (global-set-key (kbd "C-c f p") 'perltidy-buffer)
 (global-set-key (kbd "C-c f f") 'rel-autoformat)
 (global-set-key (kbd "C-c f q") 'rel-autoformat-quote)
-(global-set-key (kbd "C-c f c") 'align-cols)
 (global-set-key (kbd "C-x !") 'rel-whack)
 (define-key ctl-x-map "F" 'find-function)
 (define-key ctl-x-map "V" 'find-variable)
