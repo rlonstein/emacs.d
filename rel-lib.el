@@ -113,7 +113,7 @@
         (rel-elide-lines (point) (mark)))
        ((re-search-forward "^--" nil t)   ; kill to sig
         (forward-line -1)
-        (rel-elide-lines start (point) :nocount t))
+        (rel-elide-lines start (point) t))
        (t                                 ; kill next paragraph
         (forward-paragraph)
         (rel-elide-lines start (point)))))))

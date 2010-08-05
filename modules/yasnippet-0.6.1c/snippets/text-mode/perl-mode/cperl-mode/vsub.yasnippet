@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: sub{ my @params = validate_pos(...
+# --
+sub ${1:function_name} {
+    my @params = validate_pos(@_,${2:1});
+    $0
+}

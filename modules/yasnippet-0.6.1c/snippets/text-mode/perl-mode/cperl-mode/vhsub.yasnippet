@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: sub{ my %params = validate_with(...
+# --
+sub ${1:function_name} {
+    my %params = validate_with(
+       params => \@_,
+       spec   => {
+       $2
+       $3
+       $4
+       },
+    );
+    $0
+}
