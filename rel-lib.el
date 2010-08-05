@@ -86,8 +86,9 @@
 ;
 (defun rel-autoformatter (begin end rightmargin)
   "Run Text::Autoformat on region"
-  (shell-command-on-region begin end (format "/opt/local/bin/perl -MText::Autoformat -e 'autoformat({all=>1,right=>%d})'" rightmargin) t t )
-  (message "done."))
+  (let* ((perl-extra (if +is-employer-host+ "-M'MSDW::Version=Text-Autoformat,1.12,Text-Reform,1.11'" ""))
+         (cmd (format "/opt/local/bin/perl %s -MText::Autoformat -e 'autoformat({all=>1,right=>%d})'" perl-extra rightmargin)))
+    (shell-command-on-region begin end cmd t t )))
 
 (defun rel-autoformat (begin end)
   "Run Text::Autoformat on region with right margin of 72"
