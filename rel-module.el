@@ -12,6 +12,7 @@
 
 (defstruct rel-module
   (name :type string)
+  (enabled t :type boolean)
   (load t :type boolean)
   (path nil :type string)    ; path or path fragment
   (relative t :type boolean) ; not relative to home elisp dir
@@ -24,8 +25,16 @@
 
 (defvar rel-local-modules nil)
 
+(defun rel-local-module-exist-p (name)
+  (if (assoc name rel-local-modules) t nil))
+
 (defun rel-local-module-enabled-p (name)
-  (when (assoc name rel-local-modules) (rel-module-load (cdr (assoc name rel-local-modules)))))
+  (when (rel-local-module-exist-p name) 
+    (rel-module-load (cdr (assoc name rel-local-modules)))))
+
+(defun rel-local-module-load-p (name)
+  (when (rel-local-module-exist-p name)
+    (rel-module-enabled (cdr (assoc name rel-local-modules)))))
 
 (defun rel-add-to-load-path (path-string)
   (message (format "Checking %S..." path-string))

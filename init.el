@@ -344,33 +344,31 @@ The value is an ASCII printing character (not upper case) or a symbol."
        (define-key org-agenda-mode-map "\C-p" 'previous-line)
        (define-key org-agenda-keymap "\C-p" 'previous-line)))
 
-;      (require 'remember)
   (require 'org-table)
   (require 'org-colview)
 
-;      (add-hook 'remember-mode-hook 'org-remember-apply-template)
-
-  (setq my-org-directory (file-name-as-directory  (concat +homedir+ "/private/org")))
+  (setq my-org-directory (file-name-as-directory  (concat +homedir+ "/Documents/todo")))
   (setq diary-file (concat my-org-directory "diary"))
-  (setq org-agenda-files (list (concat my-org-directory "todo.org")))
+  (setq org-agenda-files (mapcar #'(lambda (s) (concat my-org-directory s)) '("todo.org" "work.org")))
   (setq my-org-notes-file (concat my-org-directory "notes.org"))
   (setq org-capture-templates
-        '(("t" "Todo" entry (file+headline "~/private/org/todo.org" "Tasks")
+        `(("t" "Todo" entry 
+           (file+headline ,(concat my-org-directory "todo.org") "Tasks")
            "* TODO %?\n  %u\n%i\n\n")
-          ("c" "On-Call" entry (file+headline "~/private/org/todo.org" "On-Call")
+          ("c" "On-Call" entry
+           (file+headline ,(concat my-org-directory "todo.org") "On-Call")
            "* TODO %?\n  %u\n%i\n\n" :prepend)))
 
   (setf
-   org-agenda-ndays 7
-   org-deadline-warning-days 14
+   org-agenda-ndays 14
+   org-deadline-warning-days 21
    org-agenda-show-all-dates t
-   org-agenda-skip-deadline-if-done t
-   org-agenda-skip-scheduled-if-done t
+   org-agenda-skip-deadline-if-done nil
+   org-agenda-skip-scheduled-if-done nil
    org-agenda-include-diary t
    org-agenda-start-on-weekday nil
    org-reverse-note-order t
    org-fast-tag-selection-single-key (quote expert)
-;       org-remember-store-without-prompt t
    org-clock-persist t
    org-clock-persist-file ".org-clock-save.el"
    org-clock-in-resume t
@@ -380,6 +378,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
    org-clock-out-when-done t
    org-log-done '(state)
    org-clock-in-resume t
+   org-use-speed-commands t
    org-drawers (quote ("PROPERTIES" "LOGBOOK" "CLOCK"))
    org-clock-into-drawer "CLOCK")
 
@@ -687,7 +686,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(when +running-xemacs+ (gnuserv-start))
+(if +running-xemacs+ (gnuserv-start) (server-start))
 
 (garbage-collect)
 
@@ -700,3 +699,15 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 ; educate me
 (totd)
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(org-agenda-files (quote ("/Users/lonstein/Documents/todo/todo.org"))))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
