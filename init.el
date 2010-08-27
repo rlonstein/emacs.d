@@ -492,30 +492,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 
 
-;;
-;; thanks to Edward O'Conner for these
-;;
-(when (locate-library "boxquote")
-  (defvar ted-boxquote-map (make-sparse-keymap))
-  (global-set-key (kbd "C-c q") ted-boxquote-map)
-  (mapc (lambda (cons)
-          (let ((command (car cons))
-                (key (cdr cons)))
-            (autoload command "boxquote" nil t)
-            (define-key ted-boxquote-map key command)))
-        '((boxquote-region            . "r")
-          (boxquote-buffer            . "b")
-          (boxquote-insert-file       . "i")
-          (boxquote-yank              . "y")
-          (boxquote-defun             . "F")
-          (boxquote-paragraph         . "p")
-          (boxquote-describe-function . "f")
-          (boxquote-describe-variable . "v")
-          (boxquote-describe-key      . "k")
-          (boxquote-kill              . "K")
-          (boxquote-unbox             . "u"))))
-
-
 ;;;
 ;;; This improved skeleton pair from emacswiki, possibly Alex Schroeder
 ;;;

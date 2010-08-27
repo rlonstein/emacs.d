@@ -60,6 +60,7 @@
       (uncomment-region (point) (mark))
     (uncomment-line)))
 
+
 ;; Function to run Tidy HTML parser on buffer
 ;; NOTE: this requires external Tidy program
 (defun tidy-buffer ()

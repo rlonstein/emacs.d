@@ -37,7 +37,28 @@
 		 (url-unhex-string str)
 		 'utf-8)))
 
-
+;;
+;; thanks to Edward O'Conner for these
+;;
+(when (locate-library "boxquote")
+  (defvar ted-boxquote-map (make-sparse-keymap))
+  (global-set-key (kbd "C-c b q") ted-boxquote-map)
+  (mapc (lambda (cons)
+          (let ((command (car cons))
+                (key (cdr cons)))
+            (autoload command "boxquote" nil t)
+            (define-key ted-boxquote-map key command)))
+        '((boxquote-region            . "r")
+          (boxquote-buffer            . "b")
+          (boxquote-insert-file       . "i")
+          (boxquote-yank              . "y")
+          (boxquote-defun             . "F")
+          (boxquote-paragraph         . "p")
+          (boxquote-describe-function . "f")
+          (boxquote-describe-variable . "v")
+          (boxquote-describe-key      . "k")
+          (boxquote-kill              . "K")
+          (boxquote-unbox             . "u"))))
 
 ;
 ; Joel Holveck, use available spellcheck and set flyspell mode
