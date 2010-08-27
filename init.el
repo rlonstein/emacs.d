@@ -359,28 +359,31 @@ The value is an ASCII printing character (not upper case) or a symbol."
            (file+headline ,(concat my-org-directory "todo.org") "On-Call")
            "* TODO %?\n  %u\n%i\n\n" :prepend)))
 
+;  (add-hook org-clock-out-hook 'org-clock-sum)
+
+  (setf org-columns-default-format "%30ITEM(Task) %15Effort(Est. Effort){:} %CLOCKSUM %TODO %TAGS")
+
   (setf
+   org-agenda-include-diary t
    org-agenda-ndays 14
-   org-deadline-warning-days 21
    org-agenda-show-all-dates t
    org-agenda-skip-deadline-if-done nil
    org-agenda-skip-scheduled-if-done nil
-   org-agenda-include-diary t
    org-agenda-start-on-weekday nil
-   org-reverse-note-order t
-   org-fast-tag-selection-single-key (quote expert)
+   org-clock-in-resume t
+   org-clock-in-resume t
+   org-clock-in-switch-to-state "STARTED"
+   org-clock-into-drawer "CLOCK"
+   org-clock-out-removes-zero-time-clocks t
+   org-clock-out-when-done t
    org-clock-persist t
    org-clock-persist-file ".org-clock-save.el"
-   org-clock-in-resume t
-   org-clock-out-when-done t
-   org-clock-out-removes-zero-time-clocks t
-   org-clock-in-switch-to-state "STARTED"
-   org-clock-out-when-done t
-   org-log-done '(state)
-   org-clock-in-resume t
-   org-use-speed-commands t
+   org-deadline-warning-days 21
    org-drawers (quote ("PROPERTIES" "LOGBOOK" "CLOCK"))
-   org-clock-into-drawer "CLOCK")
+   org-fast-tag-selection-single-key (quote expert)
+   org-log-done '(state)
+   org-reverse-note-order t
+   org-use-speed-commands t)
 
   (global-set-key (kbd "C-c o l") 'org-store-link) 
   (global-set-key (kbd "C-c o a") 'org-agenda)
@@ -419,7 +422,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (global-set-key [f1] (lambda () (interactive) (manual-entry (current-word))))
 (global-set-key [f2] 'undo)
 (global-set-key [M-f2] 'redo)
-(global-set-key [f3] 'goto-line)
+(global-set-key [f3] 'org-agenda)
 (global-set-key [f4] 'comment-line-or-region)
 (global-set-key [f5] 'uncomment-line-or-region)
 (global-set-key [f6] 'switch-to-previous-buffer)
