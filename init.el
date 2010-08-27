@@ -113,6 +113,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 					   "/Users/lonstein/.emacs.d/modules/org/lisp"
 					   "/Users/lonstein/.emacs.d/modules/org/contrib/lisp"
                                            "/Users/lonstein/.emacs.d/modules/yasnippet"
+                                           "/Users/lonstein/.emacs.d/rel-modules"
 					   "/opt/local/share/emacs/site-lisp/w3m"))
                        (+running-windows+ '("C:\elisp"
                                           "C:\elisp\misc"
