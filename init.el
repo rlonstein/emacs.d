@@ -90,11 +90,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 (add-to-load-path +init-file-path+)
 
-(load "rel-load")
-(rel-load-dir-contents (concat (file-name-as-directory +init-file-path+) "rel-modules"))
-
-
-
 (let ((my-path-list (cond (+is-employer-host+ '("~/.emacs.d/"
                                                 "~/.emacs.d/misc"
                                                 "~/.emacs.d/modules/"
@@ -341,12 +336,11 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 
 
-
-(when (rel-local-module-enabled-p "yasnippet")
-  (require 'yasnippet)
-  (yas/initialize)
-  (yas/load-directory
-   (concat +local-elisp-subpath+ "/modules/yasnippet/snippets")))
+;; snippets ala bbedit, easier than skeletons
+(require 'yasnippet)
+(yas/initialize)
+(yas/load-directory
+ (concat +local-elisp-subpath+ "/modules/yasnippet/snippets"))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
