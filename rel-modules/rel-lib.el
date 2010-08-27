@@ -173,22 +173,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 "))
 
-
-; from emacs-wiki
-(defun execvp (&rest args)
-  (let ((cmd (mapconcat 'shell-quote-argument args " ")))
-    (shell-command-to-string cmd)))
-
-;
-; from Sam Steingold, perhaps uncredited from someone else...
-;
-(defun sds-apostrophe ()
-  "Enclose the current symbol in `'."
-  (interactive)
-  (let ((pt (point)))
-    (skip-syntax-backward "^[_w]")
-    (skip-syntax-backward "[_w]") (insert ?`)
-    (skip-syntax-forward "[_w]") (insert ?')
-    (goto-char (+ pt (if (< pt (- (point) 2)) 1 2)))))
-
 (provide 'rel-lib)
