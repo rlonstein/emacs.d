@@ -148,10 +148,19 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;; some useful local functions, moved to their own file
 ;;
 (message "... defining local functions and customizations...")
-(load-file (concat +local-elisp-subpath+ "/rel-module.el"))
-(load-file (concat +local-elisp-subpath+ "/rel-module-cfg.el"))
-(load-file (concat +local-elisp-subpath+ "/rel-lib.el"))
 (load-file (concat +local-elisp-subpath+ "/misc/lazycat.el"))
+
+
+
+;; my conveniences
+(require 'rel-lib)
+(require 'rel-conveniences)
+
+;; Org Mode, proving to be better than planner
+(require 'rel-org-config)
+
+
+
 
 ;; William W. Wong's breadcrumb bookmarks
 (if (load "breadcrumb" t)
@@ -331,13 +340,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Org Mode, proving to be better than planner
-;;
-(require 'rel-org-config)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 (when (rel-local-module-enabled-p "yasnippet")

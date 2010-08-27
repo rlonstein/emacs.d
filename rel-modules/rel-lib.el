@@ -190,3 +190,5 @@ THE SOFTWARE.
     (skip-syntax-backward "[_w]") (insert ?`)
     (skip-syntax-forward "[_w]") (insert ?')
     (goto-char (+ pt (if (< pt (- (point) 2)) 1 2)))))
+
+(provide 'rel-lib)
