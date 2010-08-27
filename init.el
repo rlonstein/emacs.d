@@ -72,12 +72,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
           (find-file filename)
         (message "Library %s not found." library)))))
 
-;; Network coding system fix for XEmacs 21.5... by default, it does
-;; CR/LF conversion on network streams, which breaks IMAP and
-;; potentially other protocols, thanks Ron Isaacson
-(when +running-xemacs+
-  (when (boundp 'default-network-coding-system)
-    (setq default-network-coding-system '(no-conversion))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -125,16 +119,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
   (dolist (p my-path-list) (add-to-load-path p)))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; the clever guys at work have a local package system, use it
-;;
-(when (and +is-employer-host+ +running-xemacs+)
-  (progn
-    (when (load "mspackage" t)
-      (message "Adding mspackages...")
-      (mspackage-add-package "xemacs/emacs-w3m/1.4.4"))))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 
@@ -177,10 +161,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
       (message "configured uniquify"))
   (message "failed to load uniquify"))
 
-(if +running-xemacs+
-    (progn (require 'redo)
-	   (define-key global-map (kbd "C-/") 'undo)
-	   (define-key global-map (kbd "C-x C-/") 'redo)))
 
 ;; I hate dired but use it anyway
 (require 'dired)
@@ -224,7 +204,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;; version control
 (require 'vc)
 (setq vc-command-messages t)
-(if +running-xemacs+ (vc-load-vc-hooks)) ; really?
 
 ;; cperl mode is preferred, set up for consistency
 (defalias 'perl-mode 'cperl-mode)
