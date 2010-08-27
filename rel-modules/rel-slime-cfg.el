@@ -64,3 +64,5 @@
                      (cons "." #'w3m-browse-url-other-window)))))
 
 (message "... set up slime...")
+
+(provide 'rel-slime-cfg)

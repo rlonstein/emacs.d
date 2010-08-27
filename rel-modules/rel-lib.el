@@ -131,8 +131,8 @@
   (forward-line -1))
 
 (defun insert-isc-license ()
-(interactive)
-(insert "
+  (interactive)
+  (insert "
 Copyright (c) <year< <copyright holders>
 
 Permission to use, copy, modify, and/or distribute this software
