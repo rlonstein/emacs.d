@@ -205,6 +205,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (require 'vc)
 (setq vc-command-messages t)
 
+;; ... and a better git interface...
+(require 'magit)
+
 ;; cperl mode is preferred, set up for consistency
 (defalias 'perl-mode 'cperl-mode)
 (setq cperl-indent-level 4
