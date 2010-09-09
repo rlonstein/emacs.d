@@ -2,6 +2,7 @@
 
 (require 'org-install)
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+
 (eval-after-load "org-agenda"
   '(progn 
      (define-key org-agenda-mode-map "\C-n" 'next-line)
@@ -27,6 +28,23 @@
                                         ;  (add-hook org-clock-out-hook 'org-clock-sum)
 
 (setf org-columns-default-format "%30ITEM(Task) %15Effort(Est. Effort){:} %CLOCKSUM %TODO %TAGS")
+
+;;----------------------------------------------------------------------
+;; hook clock in to request an effort estimate
+;; thanks to Ryan C. Thompson on worg
+;;
+(defun rct-org-mode-ask-effort ()
+  "Ask for an effort estimate when clocking in."
+  (unless (org-entry-get (point) "Effort")
+    (let ((effort
+           (completing-read
+            "Effort: "
+            (org-entry-get-multivalued-property (point) "Effort"))))
+      (unless (equal effort "")
+        (org-set-property "Effort" effort)))))
+
+(add-hook 'org-clock-in-prepare-hook 'rct-org-mode-ask-effort)
+;;----------------------------------------------------------------------
 
 (setf
  org-agenda-include-diary t
