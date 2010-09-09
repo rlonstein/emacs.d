@@ -223,6 +223,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (autoload 'tramp "tramp-mode" nil t)
 (setq tramp-default-method "ssh")
 
+;; Michele Bini's amazing calc
+(load "mb-calc")
 
 ;; Steve Yegge's improved JavaScript mode
 (if (not +running-xemacs+)
