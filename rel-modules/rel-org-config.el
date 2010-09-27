@@ -54,7 +54,6 @@
  org-agenda-skip-scheduled-if-done nil
  org-agenda-start-on-weekday nil
  org-clock-in-resume t
- org-clock-in-resume t
  org-clock-in-switch-to-state "STARTED"
  org-clock-into-drawer "CLOCK"
  org-clock-out-removes-zero-time-clocks t
