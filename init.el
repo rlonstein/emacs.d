@@ -142,6 +142,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;; drag in a few handy things from XEmacs
 (require 'xemacsism)
 
+;; quickurl
+(require 'quickurl)
+
 ;; William W. Wong's breadcrumb bookmarks
 (if (load "breadcrumb" t)
     (progn
