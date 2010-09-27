@@ -14,7 +14,7 @@
 (setq message-log-max 1000)
 
 ;; know where we're running, though (featurep 'xemacs) is better
-(defconst +running-xemacs+  (string-match "XEmacs\\|Lucid" emacs-version))
+(defconst +running-xemacs+  (or (featurep 'xemacs) (string-match "XEmacs\\|Lucid" emacs-version)))
 (defconst +running-osx+     (equal 'darwin system-type))
 (defconst +running-carbon-emacs+ (featurep 'mac-carbon))
 (defconst +running-windows+ (equal 'windows system-type))
@@ -139,6 +139,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;; Org Mode, proving to be better than planner
 (require 'rel-org-config)
 
+;; drag in a few handy things from XEmacs
+(require 'xemacsism)
 
 ;; William W. Wong's breadcrumb bookmarks
 (if (load "breadcrumb" t)
