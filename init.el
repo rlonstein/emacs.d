@@ -212,6 +212,13 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 ;; ... and a better git interface...
 (require 'magit)
+(setq magit-git-executable
+      (cond (+is-employer-host+ "git")
+            (+running-osx+ "/opt/local/bin/git")
+            (t "git")))
+(setq magit-revert-item-confirm t)
+
+(global-set-key (kbd "C-c s s") 'magit-status)
 
 ;; cperl mode is preferred, set up for consistency
 (defalias 'perl-mode 'cperl-mode)
