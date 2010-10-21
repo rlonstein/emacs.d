@@ -309,6 +309,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (mapc (lambda (hook) (add-hook hook (lambda () (paredit-mode +1))))
       '(lisp-mode-hook
         lisp-interaction-mode-hook
+        ielm-mode-hook
         emacs-lisp-mode-hook
         scheme-mode-hook
         slime-mode-hook
@@ -470,13 +471,14 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (setq gnus-sum-thread-tree-single-leaf "`-> ")
 
 
+(require 'icomplete)
+(icomplete-mode 1)
 
-(icomplete-mode 99)
 
 ; No scrollbar, no menu, no tools. Screen real estate is precious
-(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+(if (fboundp 'scroll-bar-mode) (scroll-bar-mode nil))
+(if (fboundp 'tool-bar-mode) (tool-bar-mode nil))
+(if (fboundp 'menu-bar-mode) (menu-bar-mode nil))
 
 ;(quietly-read-abbrev-file) ; reads the abbreviations file on startup
 
