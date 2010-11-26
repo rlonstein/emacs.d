@@ -12,6 +12,7 @@
 
 (require 'org-table)
 (require 'org-colview)
+(require 'org-clock)
 
 (setq my-org-directory (file-name-as-directory  (concat +homedir+ "/Documents/todo")))
 (setq diary-file (concat my-org-directory "diary"))
@@ -73,5 +74,37 @@
 (global-set-key (kbd "C-c o r") 'org-capture)
 
 (message "... set up org-mode...")
+
+(defun rel-org-maybe-copy-ts-item (buf)
+  "Copy current line to specified buffer if line is a timestamped item"
+  (when (save-excursion
+          (beginning-of-line 1)
+          (skip-chars-forward "\t ")
+          (looking-at (concat "- " org-ts-regexp3)))
+    (let ((l (buffer-substring (line-beginning-position) (line-end-position))))
+      (with-current-buffer (get-buffer-create buf)
+        (insert l "\n")))))
+
+(defun rel-org-extract-timeline ()
+  "Iterate over the current heading collecting the first line of
+  timestamped items into a sorted timeline in a buffer"
+  (interactive)
+  (save-excursion
+    (org-back-to-heading)
+    (unless (> (org-current-level) 1) (error "Must be at sublevel"))
+    (let ((bufname "timeline")
+          (heading (org-get-heading t))
+          (clktime (apply 'encode-time (append `(0 ,(org-clock-sum-current-item) 0) (nthcdr 3 (decode-time)))))
+          (start (point))
+          (end (save-excursion (org-end-of-subtree :invisible-OK t))))
+      (with-current-buffer (get-buffer-create bufname)
+        (insert "* " heading "\n")
+        (org-entry-put (point) "ClockedTime" (format-time-string "%R" clktime) "\n"))
+      (while (progn (forward-line 1) (< (point) end))
+        (funcall 'rel-org-maybe-copy-ts-item bufname))
+      (with-current-buffer (get-buffer-create bufname)
+        (org-back-to-heading)
+        (forward-line 1)
+        (org-sort-entries-or-items :sorting-type ?t)))))
 
 (provide 'rel-org-config)
