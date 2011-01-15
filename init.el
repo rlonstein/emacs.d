@@ -193,11 +193,20 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;; misc things I use
 (require 'strip-whitespace) ; provides strip-trailing-whitespace
 (global-set-key (kbd "C-c f w") 'strip-trailing-whitespace)
+(require 'gnuplot)
 
 ;; TeX-isms
-(autoload 'tex-site "Auctex" nil t)
-(setq TeX-auto-save t)
-(setq TeX-parse-self t)
+
+;;(when (and +running-osx+ (>= 23 emacs-major-version))
+  ; Oddly, macports emacs.app doesn't find the auctex port. Tell it where to look.
+;;  (add-to-load-path "/Applications/MacPorts/Emacs.app/Contents/Resources/lisp/auctex"))
+
+(load "tex-site")
+(setq TeX-auto-save t
+      TeX-parse-self t
+      TeX-PDF-mode t
+      TeX-shell "/bin/bash")
+
 (setq-default TeX-master nil)
 (setq LaTeX-item-indent 0) ; I like indented items, dammit
 
@@ -322,6 +331,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
         slime-mode-hook
         slime-repl-mode-hook
         t-mode-hook))
+
+; slime
+(unless *is-clbuild* (require 'rel-slime-cfg))
 
 ; and ElDoc for hints
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
@@ -617,3 +629,4 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 ; educate me
 (totd)
+
