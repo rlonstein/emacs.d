@@ -201,7 +201,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
   ; Oddly, macports emacs.app doesn't find the auctex port. Tell it where to look.
 ;;  (add-to-load-path "/Applications/MacPorts/Emacs.app/Contents/Resources/lisp/auctex"))
 
-(load "tex-site")
+(load "tex-site" t)
 (setq TeX-auto-save t
       TeX-parse-self t
       TeX-PDF-mode t
