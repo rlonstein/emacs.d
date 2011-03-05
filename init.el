@@ -29,6 +29,7 @@
 (defconst +perl+ 
   (cond (+is-employer-host+ "/ms/dist/perl5/bin/perl5.8")
         (+running-osx+ "/opt/local/bin/perl")
+        (+running-bsd+ "/usr/pkg/bin/perl")
         (t "perl")))
 (defconst +local-elisp-subpath+
   (concat +homedir+ "/"
@@ -90,8 +91,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 						"~/.emacs.d/modules/slime"
 						"~/.emacs.d/modules/remember"
                                                 "~/.emacs.d/modules/magit"
-						"~/.emacs.d/modules/org/lisp"
-						"~/.emacs.d/modules/org/contrib/lisp"
+						"~/.emacs.d/modules/org-mode/lisp"
+						"~/.emacs.d/modules/org-mode/contrib/lisp"
                                                 "~/.emacs.d/modules/color-theme"))
 			  (+running-osx+ '("/Users/lonstein/.emacs.d/misc"
 					   "/Users/lonstein/.emacs.d/modules"
@@ -99,8 +100,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
 					   "/Users/lonstein/.emacs.d/modules/slime/contrib"
 					   "/Users/lonstein/.emacs.d/modules/remember"
                                            "/Users/lonstein/.emacs.d/modules/magit"
-					   "/Users/lonstein/.emacs.d/modules/org/lisp"
-					   "/Users/lonstein/.emacs.d/modules/org/contrib/lisp"
+                                           "/Users/lonstein/.emacs.d/modules/gnus/lisp"
+					   "/users/lonstein/.emacs.d/modules/org-mode/lisp"
+					   "/Users/lonstein/.emacs.d/modules/org-mode/contrib/lisp"
                                            "/Users/lonstein/.emacs.d/modules/yasnippet"
                                            "/Users/lonstein/.emacs.d/rel-modules"
 					   "/opt/local/share/emacs/site-lisp/w3m"))
@@ -114,8 +116,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
                             "~/emacsen/modules/slime"
 			    "~/emacsen/modules/slime/contrib"
 			    "~/emacsen/modules/remember"
-			    "~/emacsen/modules/org/lisp"
-			    "~/emacsen/modules/org/contrib/lisp")))))
+			    "~/emacsen/modules/org-mode/lisp"
+			    "~/emacsen/modules/org-mode/contrib/lisp")))))
   (dolist (p my-path-list) (add-to-load-path p)))
 
 
@@ -496,8 +498,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 ; No scrollbar, no menu, no tools. Screen real estate is precious
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode nil))
-(if (fboundp 'tool-bar-mode) (tool-bar-mode nil))
-(if (fboundp 'menu-bar-mode) (menu-bar-mode nil))
+;(if (fboundp 'tool-bar-mode) (tool-bar-mode nil))
+;(if (fboundp 'menu-bar-mode) (menu-bar-mode nil))
 
 ;(quietly-read-abbrev-file) ; reads the abbreviations file on startup
 
