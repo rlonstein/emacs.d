@@ -34,7 +34,7 @@
 (defconst +local-elisp-subpath+
   (concat +homedir+ "/"
           (cond (+is-employer-host+
-                 (if +running-windows+ "elisp") "/.custom/elisp")
+                 (if +running-windows+ "elisp") "/.emacs.d")
                 ((or +running-bsd+ +running-osx+ +running-linux+) ".emacs.d")
                 (t                  "emacsen"))))
 
@@ -85,42 +85,22 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 (add-to-load-path +init-file-path+)
 
-(let ((my-path-list (cond (+is-employer-host+ '("~/.emacs.d/"
-                                                "~/.emacs.d/misc"
-                                                "~/.emacs.d/modules/"
-						"~/.emacs.d/modules/slime"
-						"~/.emacs.d/modules/remember"
-                                                "~/.emacs.d/modules/magit"
-						"~/.emacs.d/modules/org-mode/lisp"
-						"~/.emacs.d/modules/org-mode/contrib/lisp"
-                                                "~/.emacs.d/modules/color-theme"))
-			  (+running-osx+ '("/Users/lonstein/.emacs.d/misc"
-					   "/Users/lonstein/.emacs.d/modules"
-					   "/Users/lonstein/.emacs.d/modules/slime"
-					   "/Users/lonstein/.emacs.d/modules/slime/contrib"
-					   "/Users/lonstein/.emacs.d/modules/remember"
-                                           "/Users/lonstein/.emacs.d/modules/magit"
-                                           "/Users/lonstein/.emacs.d/modules/gnus/lisp"
-					   "/users/lonstein/.emacs.d/modules/org-mode/lisp"
-					   "/Users/lonstein/.emacs.d/modules/org-mode/contrib/lisp"
-                                           "/Users/lonstein/.emacs.d/modules/yasnippet"
-                                           "/Users/lonstein/.emacs.d/rel-modules"
-					   "/opt/local/share/emacs/site-lisp/w3m"))
-                       (+running-windows+ '("C:\elisp"
-                                          "C:\elisp\misc"
-                                          "C:\elisp\sourceforge"
-                                          "C:\elisp\packages\remember"))
-                       (t '("~/emacsen"
-                            "~/emacsen/misc"
-			    "~/emacsen/modules"
-                            "~/emacsen/modules/slime"
-			    "~/emacsen/modules/slime/contrib"
-			    "~/emacsen/modules/remember"
-			    "~/emacsen/modules/org-mode/lisp"
-			    "~/emacsen/modules/org-mode/contrib/lisp")))))
-  (dolist (p my-path-list) (add-to-load-path p)))
-
-
+(let ((my-path-list (cond ((or +is-employer-host+
+			       +running-osx+
+			       +running-linux+
+			       +running-bsd+)
+			   '("/misc"
+			     "/modules"
+			     "/modules/slime"
+			     "/modules/slime/contrib"
+			     "/modules/remember"
+			     "/modules/magit"
+			     "/modules/gnus/lisp"
+			     "/modules/org-mode/lisp"
+			     "/modules/org-mode/contrib/lisp"
+			     "/modules/yasnippet"
+			     "/rel-modules")))))
+  (dolist (p my-path-list) (add-to-load-path (concat +local-elisp-subpath+ p))))
 
 
 
@@ -195,7 +175,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;; misc things I use
 (require 'strip-whitespace) ; provides strip-trailing-whitespace
 (global-set-key (kbd "C-c f w") 'strip-trailing-whitespace)
-(require 'gnuplot)
+(load "gnuplot" t)
+
 
 ;; TeX-isms
 
