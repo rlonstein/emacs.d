@@ -89,17 +89,17 @@ The value is an ASCII printing character (not upper case) or a symbol."
 			       +running-osx+
 			       +running-linux+
 			       +running-bsd+)
-			   '("/misc"
-			     "/modules"
-			     "/modules/slime"
-			     "/modules/slime/contrib"
-			     "/modules/remember"
-			     "/modules/magit"
-			     "/modules/gnus/lisp"
-			     "/modules/org-mode/lisp"
-			     "/modules/org-mode/contrib/lisp"
-			     "/modules/yasnippet"
-			     "/rel-modules")))))
+			   (list "/misc"
+                                 "/modules"
+                                 "/modules/slime"
+                                 "/modules/slime/contrib"
+                                 "/modules/remember"
+                                 "/modules/magit"
+                                 (when (> emacs-major-version 22) "/modules/gnus/lisp")
+                                 "/modules/org-mode/lisp"
+                                 "/modules/org-mode/contrib/lisp"
+                                 "/modules/yasnippet"
+                                 "/rel-modules")))))
   (dolist (p my-path-list) (add-to-load-path (concat +local-elisp-subpath+ p))))
 
 
