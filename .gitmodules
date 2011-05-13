@@ -10,3 +10,6 @@
 [submodule "modules/gnus"]
 	path = modules/gnus
 	url = http://git.gnus.org/gnus.git
+[submodule "modules/slime"]
+	path = modules/slime
+	url = http://sbcl.boinkor.net/git/slime.git
