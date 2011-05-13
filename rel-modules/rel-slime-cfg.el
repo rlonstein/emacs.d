@@ -1,27 +1,20 @@
 ;;
-;; (c) 2009, R. Lonstein
+;; (c) 2009,2011 R. Lonstein
 ;; http://creativecommons.org/licenses/MIT/
 ;;
-
-;(require 'clojure-mode)
-;(add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
-;(setq swank-clojure-jar-path "/Users/lonstein/clojure/clojure/clojure.jar")
-;(setq swank-java-path "/usr/bin/java")
-;(setq swank-clojure-binary "/Users/lonstein/clojure/clojure.sh")
-;(require 'swank-clojure)
 
 (setq slime-lisp-implementations
       (cond (+running-osx+
              '((sbcl ("/opt/local/bin/sbcl"))
-               (clozure ("/Users/lonstein/clozure-1.4/scripts/ccl"))
+               (clozure ("/Users/lonstein/ccl/scripts/ccl"))
                (ecl ("/opt/local/bin/ecl"))))
             (+running-bsd+
              '((sbcl ("/usr/local/bin/sbcl"))
+               (clozure ("/usr/local/bin/ccl"))
                (ecl ("/usr/local/bin/ecl"))))
             (+running-linux+
              '((sbcl ("/usr/bin/sbcl"))))
             (t '((sbcl ("sbcl"))))))
-;        (clojure ("/Users/lonstein/clojure/clojure.sh")  :init swank-clojure-init)
 
 (require 'slime-autoloads)
 (require 'slime)
@@ -37,7 +30,7 @@
 (setq slime-complete-symboll*-fancy t)
 (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
 
-(slime-setup '(slime-fancy))
+(slime-setup '(slime-fancy slime-compiler-notes-tree))
 
 (add-hook 'lisp-mode-hook (lambda () (slime-mode t)
                             (local-set-key "\r" 'newline-and-indent)
