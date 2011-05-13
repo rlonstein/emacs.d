@@ -269,6 +269,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (setq font-lock-maximum-decoration t)
 (setq font-lock-use-colors t)
 (setq font-lock-auto-fontify t)
+(setq font-lock-verbose nil)
 
 ; Emacs is smarter than XEmacs here and has a global-font-lock-mode
 (when (not +running-xemacs+)
@@ -317,6 +318,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 ; slime
 (unless *is-clbuild* (require 'rel-slime-cfg))
+; clojure
+(require 'rel-clojure-cfg)
 
 ; and ElDoc for hints
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
@@ -590,8 +593,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 (if (and +running-osx+ (not (null window-system)))
     (let ((preferred-font
-           (if +running-carbon-emacs+ "-apple-envy code r-medium-r-normal--13-130-72-72-m-130-iso10646-1"
-             "-apple-Envy_Code_R-medium-normal-normal-*-13-*-*-*-m-0-fontset-auto7")))
+           (if +running-carbon-emacs+ "-apple-Envy code r-medium-r-normal--13-130-72-72-m-130-iso10646-1"
+             "-apple-Akkurat_Mono-medium-normal-normal-*-13-*-*-*-m-0-fontset-auto7")))
       (when (font-existp preferred-font)
         (progn
           (set-face-font 'default preferred-font)
@@ -612,4 +615,3 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 ; educate me
 (totd)
-
