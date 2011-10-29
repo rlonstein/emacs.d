@@ -10,11 +10,10 @@
 (add-hook 'clojure-mode-hook (lambda () 
                                (paredit-mode t)
                                (slime-mode t)
-                               (unload-feature 'slime-autodoc t)
                                (turn-on-eldoc-mode)
-			       (define-key clojure-mode-map "{" 'paredit-open-brace)
+                               (unload-feature 'slime-autodoc t)  
+                               (define-key clojure-mode-map "{" 'paredit-open-brace)
 			       (define-key clojure-mode-map "}" 'paredit-close-brace)))
-
 
 (message "... set up clojure...")
 
