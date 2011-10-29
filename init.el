@@ -372,6 +372,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (global-set-key "\C-cG" 'goto-char)
 (global-set-key "\M-g"  'goto-line)
 
+;; alternative prefix for 60%-size keyboard lacking <ESC>
+(global-set-key  (kbd "C-`") (lookup-key (current-global-map) (kbd "ESC")))
+
 ;; smart delete, kill region or char
 (global-set-key "\C-d" 'smart-delete)
 
