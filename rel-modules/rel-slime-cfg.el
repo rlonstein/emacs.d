@@ -32,10 +32,16 @@
 
 (slime-setup '(slime-fancy slime-compiler-notes-tree))
 
-(add-hook 'lisp-mode-hook (lambda () (slime-mode t)
+(add-hook 'lisp-mode-hook (lambda ()
+                            (slime-mode t)
                             (local-set-key "\r" 'newline-and-indent)
                              (setq lisp-indent-function 'common-lisp-indent-function)
                              (setq indent-tabs-mode nil)))
+
+(add-hook 'scheme-mode-hook 
+          (lambda ()
+            (slime-mode t)))
+
 (setq common-lisp-hyperspec-root
       (cond (+running-osx+ "file:///usr/local/share/HyperSpec-7-0/HyperSpec/")
             (+running-bsd+ "file:///usr/local/share/doc/clisp-hyperspec/HyperSpec/")
@@ -55,6 +61,9 @@
                (list (cons "^ftp:/.*" (lambda (url &optional nf)
                                         (call-interactively #'find-file-at-point url)))
                      (cons "." #'w3m-browse-url-other-window)))))
+
+(setq slime-csi-path "/usr/local/bin/csi")
+(autoload 'chicken-slime "chicken-slime" "SWANK backend for Chicken" t)
 
 (message "... set up slime...")
 
