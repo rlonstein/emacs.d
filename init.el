@@ -140,6 +140,11 @@ The value is an ASCII printing character (not upper case) or a symbol."
       (message "configured breadcrumb"))
   (message "failed to load breadcrumb"))
 
+;; more convenient buffer switching
+(require 'iswitchb)
+(iswitchb-mode t)
+(setq iswitchb-case t)
+
 ;; smarter buffer naming
 (if (load "uniquify" t)
     (progn
@@ -604,6 +609,10 @@ The value is an ASCII printing character (not upper case) or a symbol."
           (message "... set OSX default face to [%s]..." preferred-font)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(require 'package)
+(add-to-list 'package-archives
+             '("marmalade" . "http://marmalade-repo.org/packages/"))
+(package-initialize)
 
 (if +running-xemacs+ (gnuserv-start) (server-start))
 
