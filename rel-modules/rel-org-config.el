@@ -66,6 +66,8 @@
  org-drawers (quote ("PROPERTIES" "LOGBOOK" "CLOCK"))
  org-fast-tag-selection-single-key (quote expert)
  org-log-done '(state)
+ org-log-into-drawer t
+ org-log-done-with-time t
  org-reverse-note-order t
  org-use-speed-commands t)
 
@@ -73,6 +75,8 @@
 (global-set-key (kbd "C-c o a") 'org-agenda)
 (global-set-key (kbd "C-c o b") 'org-iswitchb)
 (global-set-key (kbd "C-c o r") 'org-capture)
+
+(org-defkey org-mode-map (kbd "C-c C-x n") 'org-add-note)
 
 (message "... set up org-mode...")
 

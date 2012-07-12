@@ -4,6 +4,7 @@
 ;;;
 (autoload 'clojure-mode "clojure-mode" "Major mode for Clojure" t)
 (add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
+(add-to-list 'auto-mode-alist '("\\.cljs$" . clojure-mode))
 
 (require 'paredit)
 
