@@ -14,5 +14,5 @@
 	path = modules/slime
 	url = http://sbcl.boinkor.net/git/slime.git
 [submodule "pylookup"]
-	path = pylookup
+	path = modules/pylookup
 	url = https://github.com/tsgates/pylookup.git
