@@ -91,8 +91,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 			       +running-bsd+)
 			   (list "/misc"
                                  "/modules"
-                                 "/modules/slime"
-                                 "/modules/slime/contrib"
                                  "/modules/remember"
                                  "/modules/magit"
                                  (when (> emacs-major-version 22) "/modules/gnus/lisp")
@@ -162,7 +160,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
     (progn (require 'post)
 	   (setq auto-mode-alist
 		 (cons '("/tmp/mutt.*$" . post-mode) auto-mode-alist))
-           (add-hook 'post-mode-hook 'turn-on-filleadapt-mode)
+           (add-hook 'post-mode-hook 'turn-on-filladapt-mode)
            (add-hook 'post-mode-hook 'footnote-mode)))
 
 ;; footnotes
@@ -326,6 +324,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ; clojure
 (require 'rel-clojure-cfg)
 
+; various schemes implementations go here...
+(require 'rel-gauche-cfg)
+
 ; and ElDoc for hints
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
@@ -341,6 +342,19 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (yas/load-directory
  (concat +local-elisp-subpath+ "/modules/yasnippet/snippets"))
 
+
+;; pylookup
+(setq pylookup-dir
+      (concat +local-elisp-subpath+ "/modules/pylookup"))
+(add-to-list 'load-path pylookup-dir)
+
+(setq pylookup-program (concat pylookup-dir "/pylookup.py"))
+(setq pylookup-db-file (concat pylookup-dir "/pylookup.db"))
+
+(autoload 'pylookup-lookup "pylookup"
+  "Lookup SEARCH-TERM in the Python HTML indexes." t)
+(autoload 'pylookup-update "pylookup" 
+  "Run pylookup-update and create the database at `pylookup-db-file'." t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -393,6 +407,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (global-set-key (kbd "C-x I")   'insert-buffer)
 (global-set-key (kbd "C-c f t") 'tidy-buffer)
 (global-set-key (kbd "C-c f p") 'perltidy-buffer)
+(global-set-key (kbd "C-C f @") 'rel-toggle-fill-modes)
 (global-set-key (kbd "C-c f f") 'rel-autoformat)
 (global-set-key (kbd "C-c f q") 'rel-autoformat-quote)
 (global-set-key (kbd "C-x !") 'rel-whack)
@@ -624,6 +639,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (message "Completed load of Ross's customizations.")
 
 (put 'narrow-to-region 'disabled nil)
+
+
 
 ; educate me
 (totd)

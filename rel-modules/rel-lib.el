@@ -6,6 +6,11 @@
 ;;; http://creativecommons.org/licenses/MIT/
 ;;;
 
+(defun rel-toggle-fill-modes ()
+  (interactive)
+  (auto-fill-mode (if auto-fill-function 0 1))
+  (filladapt-mode))
+
 (defun match-paren (arg)
   "Go to the matching parenthesis if on parenthesis otherwise insert."
   (interactive "p")
