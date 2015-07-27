@@ -98,6 +98,6 @@ Prefix arg means align that many columns. (default is all)"
 	  (setq p (point))))
       )))
 
-(provide 'align)
+(provide 'align-cols)
 
 ;;; align.el ends here
