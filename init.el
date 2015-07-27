@@ -13,6 +13,16 @@
 ;(setq inhibit-default-init t)
 (setq message-log-max 1000)
 
+;; (when (< emacs-major-version 24)
+;;   (progn
+;;     (require 'package)
+;;     (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+;;     (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
+;;   (package-initialize)))
+
+(setq package-enable-at-startup t)
+(package-initialize)
+
 ;; know where we're running, though (featurep 'xemacs) is better
 (defconst +running-xemacs+  (or (featurep 'xemacs) (string-match "XEmacs\\|Lucid" emacs-version)))
 (defconst +running-osx+     (equal 'darwin system-type))
@@ -74,7 +84,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
         (message "Library %s not found." library)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(defun dot-emacs (relative-path)
+  "Return the full path of a file in the user's emacs directory."
+  (expand-file-name (concat user-emacs-directory relative-path)))
 
 (defun add-to-load-path (path-string)
   (message (format "Passed %S..." path-string))
@@ -92,11 +104,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 			   (list "/misc"
                                  "/modules"
                                  "/modules/remember"
-                                 "/modules/magit"
                                  (when (> emacs-major-version 22) "/modules/gnus/lisp")
-                                 "/modules/org-mode/lisp"
-                                 "/modules/org-mode/contrib/lisp"
-                                 "/modules/yasnippet"
                                  "/rel-modules")))))
   (dolist (p my-path-list) (add-to-load-path (concat +local-elisp-subpath+ p))))
 
@@ -206,13 +214,16 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (setq vc-command-messages t)
 
 ;; ... and a better git interface...
-(require 'magit)
-(setq magit-git-executable
-      (cond (+is-employer-host+ "git")
-            (+running-osx+ "/opt/local/bin/git")
-            (t "git")))
-(setq magit-revert-item-confirm t)
-
+(eval-after-load "magit"
+  '(progn
+     (require 'magit)
+     (setq magit-git-executable
+	   (cond (+is-employer-host+ "git")
+		 (+running-osx+ "/opt/local/bin/git")
+		 (t "git")))
+     (setq magit-revert-item-confirm t)
+     (require 'magit-gitflow)
+     (add-hook 'magit-mode-hook 'turn-on-magit-gitflow)))
 (global-set-key (kbd "C-c s s") 'magit-status)
 
 ;; cperl mode is preferred, set up for consistency
@@ -226,7 +237,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (setq javascript-indent-level 4)
 
 ;; align-cols
-(require 'align)
+(require 'align-cols)
 (global-set-key (kbd "C-c f c") 'align-cols)
 
 ;; tramp mode
@@ -250,18 +261,28 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (global-set-key (kbd "C-c \\") 'chop-move-up)
 (global-set-key (kbd "C-c /") 'chop-move-down)
 
+;; ECB
+(setq semantic-load-turn-useful-things-on t)
+(setq ecb-tip-of-the-day nil)
+(require 'ecb)
+
+
+
 ;;
 ;; escreen, screen-style session in emacs. Noah Friedman
 ;; http://www.splode.com/~friedman/software/emacs-lisp/src/escreen.el
 ;;
-(if (load "escreen" t) (escreen-install) (message "No escreen available"))
+(if (load "escreen" t)
+    (progn
+      (ecb-winman-escreen-enable-support)
+      (escreen-install))
+  (message "No escreen available"))
 
 ;; hideshow for programming
 (load-library "hideshow")
-(add-hook 'java-mode-hook       'hs-minor-mode)
-(add-hook 'cperl-mode-hook      'hs-minor-mode)
-(add-hook 'c-mode-hook          'hs-minor-mode)
-(add-hook 'emacs-lisp-mode-hook 'hs-minor-mode)
+(dolist (modehook (list 'java-mode-hook 'cperl-mode-hook 'c-mode-hook
+                    'ruby-mode-hook 'enh-ruby-mode-hook))
+  (add-hook modehook 'hs-minor-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -319,14 +340,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
         slime-repl-mode-hook
         t-mode-hook))
 
-; slime
-(unless *is-clbuild* (require 'rel-slime-cfg))
-; clojure
-(require 'rel-clojure-cfg)
-
-; various schemes implementations go here...
-(require 'rel-gauche-cfg)
-
 ; and ElDoc for hints
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
@@ -334,13 +347,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-
-;; snippets ala bbedit, easier than skeletons
-(require 'yasnippet)
-(yas/initialize)
-(yas/load-directory
- (concat +local-elisp-subpath+ "/modules/yasnippet/snippets"))
 
 
 ;; pylookup
@@ -378,8 +384,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (global-set-key [f2] 'undo)
 (global-set-key [M-f2] 'redo)
 (global-set-key [f3] 'org-agenda)
-(global-set-key [f4] 'comment-line-or-region)
-(global-set-key [f5] 'uncomment-line-or-region)
+(global-set-key [f4] 'rel-comment-line-or-region)
+(global-set-key [f5] 'rel-uncomment-line-or-region)
 (global-set-key [f6] 'switch-to-previous-buffer)
 (global-set-key [f7] 'switch-to-next-buffer)
 (global-set-key [f10] 'next-error)
@@ -398,8 +404,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (global-set-key "\C-d" 'smart-delete)
 
 ;; comment/uncomment so useful, I set it twice
-(global-set-key (kbd "C-c c") 'comment-line-or-region)
-(global-set-key (kbd "C-c u") 'uncomment-line-or-region)
+(global-set-key (kbd "C-c c") 'rel-comment-line-or-region)
+(global-set-key (kbd "C-c u") 'rel-uncomment-line-or-region)
 (global-set-key (kbd "C-S-v") 'scroll-down)
 ;;
 
@@ -424,6 +430,12 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (global-set-key (kbd "C-c s o r f") 'sort-regexp-fields)
 (global-set-key (kbd "C-c s o r r") 'reverse-region)
 
+;; Wiegley's timeclock
+(define-key ctl-x-map "ti" 'timeclock-in)
+(define-key ctl-x-map "to" 'timeclock-out)
+(define-key ctl-x-map "tc" 'timeclock-change)
+(define-key ctl-x-map "tr" 'timeclock-reread-log)
+(define-key ctl-x-map "tu" 'timeclock-update-mode-line)
 
 ;; Steve Yegge's advice
 (global-set-key "\C-x\C-m" 'execute-extended-command)
@@ -499,13 +511,18 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (setq gnus-sum-thread-tree-single-leaf "`-> ")
 
 
+;
+; Indent case label from switch on C modes
+;
+(c-set-offset 'case-label '+)
+
 (require 'icomplete)
 (icomplete-mode 1)
 
 
 ; No scrollbar, no menu, no tools. Screen real estate is precious
-(if (fboundp 'scroll-bar-mode) (scroll-bar-mode nil))
-;(if (fboundp 'tool-bar-mode) (tool-bar-mode nil))
+(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 ;(if (fboundp 'menu-bar-mode) (menu-bar-mode nil))
 
 ;(quietly-read-abbrev-file) ; reads the abbreviations file on startup
@@ -599,16 +616,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (define-key global-map (kbd "M-(")  'myskeleton-pair-insert)
 (define-key global-map (kbd "M-[")  'myskeleton-pair-insert) ; brokeness on linux xterm?
 
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Custom color and faces, minimalist light fg/dark bg stuff
-;;
-(load-file (localize-load-path "/emacs-color-theme.el"))
-(my-color-theme)
-(message "... face customization...")
-
 ;; and a local customization
 (defun font-existp (font)
   (if (null (x-list-fonts font))
@@ -617,19 +624,18 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (if (and +running-osx+ (not (null window-system)))
     (let ((preferred-font
            (if +running-carbon-emacs+ "-apple-Envy code r-medium-r-normal--13-130-72-72-m-130-iso10646-1"
-             "-apple-Akkurat_Mono-medium-normal-normal-*-13-*-*-*-m-0-fontset-auto7")))
+             "-apple-Akkurat_Mono-medium-normal-normal-*-12-*-*-*-m-0-fontset-auto7")))
       (when (font-existp preferred-font)
         (progn
           (set-face-font 'default preferred-font)
           (message "... set OSX default face to [%s]..." preferred-font)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(require 'package)
-(add-to-list 'package-archives
-             '("marmalade" . "http://marmalade-repo.org/packages/"))
-(package-initialize)
+(if +running-xemacs+ (gnuserv-start)
+  (server-start))
 
-(if +running-xemacs+ (gnuserv-start) (server-start))
+(if +running-osx+
+    (set-variable 'magit-emacsclient-executable "/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient"))
 
 (garbage-collect)
 
@@ -640,7 +646,52 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 (put 'narrow-to-region 'disabled nil)
 
+;; Custom color and faces
+(load-file (localize-load-path "/emacs-color-theme.el"))
+(my-color-theme)
+(message "... face customization...")
 
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(column-number-mode t)
+ '(ecb-options-version "2.40")
+ '(ecb-auto-activate t)
+ '(ecb-layout-window-sizes
+   (quote
+    (("left8"
+      (ecb-directories-buffer-name 0.26595744680851063 . 0.2967032967032967)
+      (ecb-sources-buffer-name 0.26595744680851063 . 0.24175824175824176)
+      (ecb-methods-buffer-name 0.26595744680851063 . 0.2857142857142857)
+      (ecb-history-buffer-name 0.26595744680851063 . 0.16483516483516483)))))
+ '(org-agenda-files (quote ("/Users/lonstein/Documents/todo/todo.org")))
+ '(package-archives
+   (quote
+    (("marmalade" . "http://marmalade-repo.org/packages/")
+     ("gnu" . "http://elpa.gnu.org/packages/")
+     ("melpa" . "http://melpa.milkbox.net/packages/")))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+(setq enh-ruby-bounce-deep-indent t)
+(setq enh-ruby-hanging-brace-indent-level 2)
+
+;yasnippet
+(with-eval-after-load 'yasnippet
+  '(yas-global-mode 1))
+
+; slime
+(with-eval-after-load 'slime
+  '(progn
+     (require 'rel-slime-cfg)
+     (require 'rel-clojure-cfg)
+     (require 'rel-gauche-cfg)))
 
 ; educate me
 (totd)
