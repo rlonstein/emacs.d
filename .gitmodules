@@ -1,18 +1,9 @@
 [submodule "modules/org"]
 	path = modules/org
 	url = git://orgmode.org/org-mode.git
-[submodule "modules/org-mode"]
-	path = modules/org-mode
-	url = git://orgmode.org/org-mode.git
-[submodule "modules/magit"]
-	path = modules/magit
-	url = https://github.com/philjackson/magit.git
 [submodule "modules/gnus"]
 	path = modules/gnus
 	url = http://git.gnus.org/gnus.git
-[submodule "modules/slime"]
-	path = modules/slime
-	url = http://sbcl.boinkor.net/git/slime.git
 [submodule "pylookup"]
 	path = modules/pylookup
 	url = https://github.com/tsgates/pylookup.git
