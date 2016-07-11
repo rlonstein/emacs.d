@@ -1,9 +1,6 @@
 [submodule "modules/org"]
 	path = modules/org
 	url = git://orgmode.org/org-mode.git
-[submodule "modules/gnus"]
-	path = modules/gnus
-	url = http://git.gnus.org/gnus.git
 [submodule "pylookup"]
 	path = modules/pylookup
 	url = https://github.com/tsgates/pylookup.git
