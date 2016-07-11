@@ -25,21 +25,21 @@
   (interactive)
   (switch-to-buffer (nth (- (length (buffer-list)) 1) (buffer-list))))
 
-(defun uncomment-region (beg end)
+(defun rel-uncomment-region (beg end)
   "Like `comment-region' invoked with a C-u prefix arg."
   (interactive)
   (comment-region beg end -2))
 
-(defun comment-line ()
+(defun rel-comment-line ()
   (interactive)
   (beginning-of-line)
   (let ((beg (point))) (forward-line 1) (comment-region beg (point))))
 
-(defun uncomment-line ()
+(defun rel-uncomment-line ()
   (interactive)
   (beginning-of-line)
   (let ((beg (point))) (forward-line 1)
-       (uncomment-region beg (point))))
+       (rel-uncomment-region beg (point))))
 
 (unless (fboundp 'region-exists-p)
   (defun region-exists-p () mark-active))
@@ -50,42 +50,44 @@
   (if (region-exists-p) (delete-region (point) (mark))
     (delete-char 1)))
 
-(defun comment-line-or-region ()
+(defun rel-comment-line-or-region ()
   "Comments the current line or region, depending on whether a region is
   currently active or not."
   (interactive)
   (if (region-exists-p)
       (comment-region (point) (mark))
-    (comment-line)))
+    (rel-comment-line)))
 
-(defun uncomment-line-or-region ()
+(defun rel-uncomment-line-or-region ()
   "Uncomments the current line, or if the region is active, the whole region."
   (interactive)
   (if (region-exists-p)
-      (uncomment-region (point) (mark))
-    (uncomment-line)))
+      (rel-uncomment-region (point) (mark))
+    (rel-uncomment-line)))
 
 
 ;; Function to run Tidy HTML parser on buffer
 ;; NOTE: this requires external Tidy program
-(defun tidy-buffer ()
-  "Run Tidy HTML parser on current buffer."
-  (interactive)
-  (if (get-buffer "tidy-errs") (kill-buffer "tidy-errs"))
-  (shell-command-on-region 
-   (point-min) (point-max)
-   "tidy -f /tmp/tidy-errs -q -i -asxhtml -wrap 72 -c" t)
-  (find-file-other-window "/tmp/tidy-errs")
-  (other-window 1)
-  (delete-file "/tmp/tidy-errs")
-  (message "buffer tidy'ed"))
+(when (executable-find "tidy")
+  (defun tidy-buffer ()
+    "Run Tidy HTML parser on current buffer."
+    (interactive)
+    (if (get-buffer "tidy-errs") (kill-buffer "tidy-errs"))
+    (shell-command-on-region 
+     (point-min) (point-max)
+     "tidy -f /tmp/tidy-errs -q -i -asxhtml -wrap 72 -c" t)
+    (find-file-other-window "/tmp/tidy-errs")
+    (other-window 1)
+    (delete-file "/tmp/tidy-errs")
+    (message "buffer tidy'ed")))
 
 ;FIXME: collect error output from astyle into new buffer
-(defun style-buffer ()
-  "Run astyle on current buffer"
-  (interactive)
-  (shell-command-on-region (point-min) (point-max) "astyle" t)
-  (message "buffer astyled"))
+(when (executable-find "astyle")
+  (defun style-buffer ()
+    "Run astyle on current buffer"
+    (interactive)
+    (shell-command-on-region (point-min) (point-max) "astyle" t)
+    (message "buffer astyled")))
 
 ;
 ; run perl Text::Autoformat on region

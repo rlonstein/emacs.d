@@ -15,17 +15,18 @@
 (require 'org-colview)
 (require 'org-clock)
 
-(setq my-org-directory (file-name-as-directory  (concat +homedir+ "/Documents/todo")))
-(setq diary-file (concat my-org-directory "diary"))
-(setq org-agenda-files (mapcar #'(lambda (s) (concat my-org-directory s)) '("todo.org" "work.org")))
-(setq my-org-notes-file (concat my-org-directory "notes.org"))
-(setq org-capture-templates
-      `(("t" "Todo" entry 
-         (file+headline ,(concat my-org-directory "todo.org") "Tasks")
-         "* TODO %?\n  %u\n%i\n\n")
-        ("c" "On-Call" entry
-         (file+headline ,(concat my-org-directory "todo.org") "On-Call")
-         "* TODO %?\n  %u\n%i\n\n" :prepend)))
+;(setq my-org-directory (file-name-as-directory  (concat +homedir+ "/Documents/todo")))
+;(setq diary-file (concat my-org-directory "diary"))
+;(setq org-agenda-files (mapcar #'(lambda (s) (concat my-org-directory s)) '("todo.org" "work.org")))
+;(setq my-org-notes-file (concat my-org-directory "notes.org"))
+
+;; (setq org-capture-templates
+;;       `(("t" "Todo" entry 
+;;          (file+headline ,(concat my-org-directory "todo.org") "Tasks")
+;;          "* TODO %?\n  %u\n%i\n\n")
+;;         ("c" "On-Call" entry
+;;          (file+headline ,(concat my-org-directory "todo.org") "On-Call")
+;;          "* TODO %?\n  %u\n%i\n\n" :prepend)))
 
                                         ;  (add-hook org-clock-out-hook 'org-clock-sum)
 

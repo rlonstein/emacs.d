@@ -3,6 +3,15 @@
 ;; attribution included where available
 ;;
 
+(defun plist-to-alist (the-plist)
+  (defun get-tuple-from-plist (the-plist)
+    (when the-plist
+      (cons (car the-plist) (cadr the-plist))))
+  (let ((alist '()))
+    (while the-plist
+      (add-to-list 'alist (get-tuple-from-plist the-plist))
+      (setq the-plist (cddr the-plist)))
+  alist))
 
 ;
 ; adapted from c2.com wiki, GreatEmacsLispSnippets...
@@ -147,4 +156,32 @@
     (skip-syntax-forward "[_w]") (insert ?')
     (goto-char (+ pt (if (< pt (- (point) 2)) 1 2)))))
 
+
+; Get current system name
+(defun insert-system-name() (interactive)
+  "Get current system name"
+  (insert (format "%s" system-name)))
+
+; Get current system type
+(defun insert-system-type() (interactive)
+  "Get current system type"
+  (insert (format "%s" system-type)))
+
+; from MJD 20101110, after similar on emacs-wiki
+(defun revert-all-buffers ()
+  "Refreshes all open buffers from their respective files"
+  (interactive)
+  (let* ((list (buffer-list))
+         (buffer (car list)))
+    (while buffer
+      (when (and (buffer-file-name buffer) 
+                 (not (buffer-modified-p buffer)))
+        (set-buffer buffer)
+        (revert-buffer t t t))
+      (setq list (cdr list))
+      (setq buffer (car list))))
+  (message "Refreshed open files"))
+
 (provide 'rel-borrowed-snippets)
+
+
