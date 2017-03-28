@@ -143,10 +143,10 @@ The value is an ASCII printing character (not upper case) or a symbol."
       (message "configured breadcrumb"))
   (message "failed to load breadcrumb"))
 
-;; more convenient buffer switching
-(require 'iswitchb)
-(iswitchb-mode t)
-(setq iswitchb-case t)
+;; more convenient buffer switching, 
+;;(require 'iswitchb)
+;;(iswitchb-mode t)
+;;(setq iswitchb-case t)
 
 ;; smarter buffer naming
 (if (load "uniquify" t)
@@ -232,10 +232,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
       cperl-tab-always-indent t)
 
 (setq javascript-indent-level 4)
-
-;; align-cols
-(require 'align-cols)
-(global-set-key (kbd "C-c f c") 'align-cols)
 
 ;; tramp mode
 (autoload 'tramp "tramp-mode" nil t)
@@ -469,7 +465,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
  toolbar-visible-p nil
  uniquify-buffer-name-style 'forward   ; unique buffer names w/dir
  user-full-name "Ross Lonstein"
- user-mail-address "rlonstein@pobox.com"
+ user-mail-address "rlonstein@datapipe.com"
  visible-bell t                        ; no beeping
  yank-excluded-properties t            ; don't paste properties
  transient-mark-mode t
@@ -641,7 +637,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
- '(ecb-auto-activate t)
  '(ecb-eshell-buffer-sync nil)
  '(ecb-layout-window-sizes
    (quote
@@ -655,12 +650,15 @@ The value is an ASCII printing character (not upper case) or a symbol."
       (ecb-methods-buffer-name 0.26595744680851063 . 0.2857142857142857)
       (ecb-history-buffer-name 0.26595744680851063 . 0.16483516483516483)))))
  '(ecb-options-version "2.40")
- '(org-agenda-files (quote ("/Users/lonstein/Documents/todo/todo.org")))
+ '(org-agenda-files (quote ("/Users/rosslonstein/Documents/todo/todo.org")))
  '(package-archives
    (quote
     (("marmalade" . "http://marmalade-repo.org/packages/")
      ("gnu" . "http://elpa.gnu.org/packages/")
-     ("melpa" . "http://melpa.milkbox.net/packages/")))))
+     ("melpa" . "http://melpa.milkbox.net/packages/"))))
+ '(package-selected-packages
+   (quote
+    (go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts ecb dockerfile-mode docker dash-at-point d-mode color-theme clojure-mode auctex alchemist))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
