@@ -255,9 +255,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (global-set-key (kbd "C-c /") 'chop-move-down)
 
 ;; ECB
-(setq semantic-load-turn-useful-things-on t)
-(setq ecb-tip-of-the-day nil)
-(require 'ecb)
+;(setq semantic-load-turn-useful-things-on t)
+;(setq ecb-tip-of-the-day nil)
+;(require 'ecb)
 
 
 
@@ -265,11 +265,11 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;; escreen, screen-style session in emacs. Noah Friedman
 ;; http://www.splode.com/~friedman/software/emacs-lisp/src/escreen.el
 ;;
-(if (load "escreen" t)
-    (progn
-      (ecb-winman-escreen-enable-support)
-      (escreen-install))
-  (message "No escreen available"))
+;(if (load "escreen" t)
+;    (progn
+;      (ecb-winman-escreen-enable-support)
+;      (escreen-install))
+;  (message "No escreen available"))
 
 ;; hideshow for programming
 (load-library "hideshow")
@@ -537,51 +537,51 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ; and is more portable between Xemacs and Emacs
 ;
 
-(setq skeleton-end-hook nil) ; do not insert newline after skeleton insertation
+;; (setq skeleton-end-hook nil) ; do not insert newline after skeleton insertation
 
-(defvar myskeleton-pairs
-  '((?\" . (?\" ?\" ?\" _ ?\"))
-    (?\( . (?\( ?\) ?\( _ ?\)))
-    (?\[ . (?\[ ?\] ?\[ _ ?\]))
-    (?\{ . (?\{ ?\} ?\{ _ ?\}))
-    (?\' . (?\' ?\' ?\' _ ?\'))
-    (?\` . (?\` ?\' ?\` _ ?\')))
-  "Table of skeletons pairs. Maybe local to buffer.")
+;; (defvar myskeleton-pairs
+;;   '((?\" . (?\" ?\" ?\" _ ?\"))
+;;     (?\( . (?\( ?\) ?\( _ ?\)))
+;;     (?\[ . (?\[ ?\] ?\[ _ ?\]))
+;;     (?\{ . (?\{ ?\} ?\{ _ ?\}))
+;;     (?\' . (?\' ?\' ?\' _ ?\'))
+;;     (?\` . (?\` ?\' ?\` _ ?\')))
+;;   "Table of skeletons pairs. Maybe local to buffer.")
 
-(defun myskeleton-pair-insert (arg)
-  "Inserts pairs."
-  (interactive "*P")
+;; (defun myskeleton-pair-insert (arg)
+;;   "Inserts pairs."
+;;   (interactive "*P")
 
-  (let* ((chr (event-key last-command-event))
-	 (pair (assoc chr myskeleton-pairs)))
-    (if (null pair)
-	(message "Character %s is not in `myskeleton-pairs'.")
-      (cond ((and (listp arg) (not (null arg)))
-	     ;; Surround current word with
-	     (save-excursion
-	       (when (not (looking-at "\\<"))
-		 (backward-word 1))
-	       (when (looking-at "\\sw")
-		 (let ((pl 0)
-		       (r (prefix-numeric-value arg)))
-		   (while (> r 1)
-		     (setq r (/ r 4))
-		     (setq pl (1+ pl)))
+;;   (let* ((chr (event-key last-command-event))
+;; 	 (pair (assoc chr myskeleton-pairs)))
+;;     (if (null pair)
+;; 	(message "Character %s is not in `myskeleton-pairs'.")
+;;       (cond ((and (listp arg) (not (null arg)))
+;; 	     ;; Surround current word with
+;; 	     (save-excursion
+;; 	       (when (not (looking-at "\\<"))
+;; 		 (backward-word 1))
+;; 	       (when (looking-at "\\sw")
+;; 		 (let ((pl 0)
+;; 		       (r (prefix-numeric-value arg)))
+;; 		   (while (> r 1)
+;; 		     (setq r (/ r 4))
+;; 		     (setq pl (1+ pl)))
 
-		   (insert (make-string pl (nth 0 (cdr pair))))
-		   (forward-word 1)
-		   (insert (make-string pl (nth 1 (cdr pair))))))))
-	    (t (mapcar (lambda (not-used)
-			 (skeleton-insert
-			  (cons nil (cdddr pair))))
-		       (make-list (prefix-numeric-value arg) 'not-used)))))))
+;; 		   (insert (make-string pl (nth 0 (cdr pair))))
+;; 		   (forward-word 1)
+;; 		   (insert (make-string pl (nth 1 (cdr pair))))))))
+;; 	    (t (mapcar (lambda (not-used)
+;; 			 (skeleton-insert
+;; 			  (cons nil (cdddr pair))))
+;; 		       (make-list (prefix-numeric-value arg) 'not-used)))))))
 
-;; pairing for C-mode
-(defun my-skelpair-cmode ()
-  (make-local-variable 'myskeleton-pairs)
-  (setq myskeleton-pairs (copy-alist myskeleton-pairs))
-  (remassoc ?\{ myskeleton-pairs)
-  (add-to-list 'myskeleton-pairs '(?{ . (?{ ?} ?{ '(progn (indent-according-to-mode) nil) \n _ \n ?} '(progn (indent-according-to-mode) nil)))))
+;; ;; pairing for C-mode
+;; (defun my-skelpair-cmode ()
+;;   (make-local-variable 'myskeleton-pairs)
+;;   (setq myskeleton-pairs (copy-alist myskeleton-pairs))
+;;   (remassoc ?\{ myskeleton-pairs)
+;;   (add-to-list 'myskeleton-pairs '(?{ . (?{ ?} ?{ '(progn (indent-according-to-mode) nil) \n _ \n ?} '(progn (indent-according-to-mode) nil)))))
 
 ;(add-hook 'c-mode-hook 'my-skelpair-cmode)
 
@@ -589,12 +589,12 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (define-key global-map (kbd "C-M-}") 'forward-paragraph)
 ;(define-key global-map (kbd "C-M-'") 'abbrev-prefix-mark)
 
-(define-key global-map (kbd "M-\"") 'myskeleton-pair-insert)
-(define-key global-map (kbd "M-`")  'myskeleton-pair-insert)
-(define-key global-map (kbd "M-'")  'myskeleton-pair-insert)
-(define-key global-map (kbd "M-{")  'myskeleton-pair-insert)
-(define-key global-map (kbd "M-(")  'myskeleton-pair-insert)
-(define-key global-map (kbd "M-[")  'myskeleton-pair-insert) ; brokeness on linux xterm?
+;; (define-key global-map (kbd "M-\"") 'myskeleton-pair-insert)
+;; (define-key global-map (kbd "M-`")  'myskeleton-pair-insert)
+;; (define-key global-map (kbd "M-'")  'myskeleton-pair-insert)
+;; (define-key global-map (kbd "M-{")  'myskeleton-pair-insert)
+;; (define-key global-map (kbd "M-(")  'myskeleton-pair-insert)
+;; (define-key global-map (kbd "M-[")  'myskeleton-pair-insert) ; brokeness on linux xterm?
 
 ;; and a local customization
 (defun font-existp (font)
@@ -617,13 +617,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (if +running-osx+
     (set-variable 'magit-emacsclient-executable "/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient"))
 
-(garbage-collect)
-
-(when debug-on-error
-  (setq debug-on-error nil))
-
-(message "Completed load of Ross's customizations.")
-
 (put 'narrow-to-region 'disabled nil)
 
 ;; Custom color and faces
@@ -637,19 +630,19 @@ The value is an ASCII printing character (not upper case) or a symbol."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
- '(ecb-eshell-buffer-sync nil)
- '(ecb-layout-window-sizes
-   (quote
-    (("left3"
-      (ecb-directories-buffer-name 0.32947976878612717 . 0.2808988764044944)
-      (ecb-sources-buffer-name 0.32947976878612717 . 0.3595505617977528)
-      (ecb-methods-buffer-name 0.32947976878612717 . 0.34831460674157305))
-     ("left8"
-      (ecb-directories-buffer-name 0.26595744680851063 . 0.2967032967032967)
-      (ecb-sources-buffer-name 0.26595744680851063 . 0.24175824175824176)
-      (ecb-methods-buffer-name 0.26595744680851063 . 0.2857142857142857)
-      (ecb-history-buffer-name 0.26595744680851063 . 0.16483516483516483)))))
- '(ecb-options-version "2.40")
+; '(ecb-eshell-buffer-sync nil)
+; '(ecb-layout-window-sizes
+;   (quote
+;    (("left3"
+;      (ecb-directories-buffer-name 0.32947976878612717 . 0.2808988764044944)
+;      (ecb-sources-buffer-name 0.32947976878612717 . 0.3595505617977528)
+;      (ecb-methods-buffer-name 0.32947976878612717 . 0.34831460674157305))
+;     ("left8"
+;      (ecb-directories-buffer-name 0.26595744680851063 . 0.2967032967032967)
+;      (ecb-sources-buffer-name 0.26595744680851063 . 0.24175824175824176)
+;      (ecb-methods-buffer-name 0.26595744680851063 . 0.2857142857142857)
+;      (ecb-history-buffer-name 0.26595744680851063 . 0.16483516483516483)))))
+; '(ecb-options-version "2.40")
  '(org-agenda-files (quote ("/Users/rosslonstein/Documents/todo/todo.org")))
  '(package-archives
    (quote
@@ -658,7 +651,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
      ("melpa" . "http://melpa.milkbox.net/packages/"))))
  '(package-selected-packages
    (quote
-    (go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts ecb dockerfile-mode docker dash-at-point d-mode color-theme clojure-mode auctex alchemist))))
+    (cider ## go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dockerfile-mode docker dash-at-point d-mode color-theme clojure-mode auctex alchemist))))
+; ecb
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -680,6 +674,20 @@ The value is an ASCII printing character (not upper case) or a symbol."
      (require 'rel-slime-cfg)
      (require 'rel-clojure-cfg)
      (require 'rel-gauche-cfg)))
+
+; maybe fix OSX iTerm2/Emacs keys
+(define-key input-decode-map "\e[1;5A" [C-up])
+(define-key input-decode-map "\e[1;5B" [C-down])
+(define-key input-decode-map "\e[1;5C" [C-right])
+(define-key input-decode-map "\e[1;5D" [C-left])
+
+;;; and we're done...
+(garbage-collect)
+
+(when debug-on-error
+  (setq debug-on-error nil))
+
+(message "Completed load of Ross's customizations.")
 
 ; educate me
 (totd)

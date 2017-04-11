@@ -16,6 +16,9 @@
                                (define-key clojure-mode-map "{" 'paredit-open-brace)
 			       (define-key clojure-mode-map "}" 'paredit-close-brace)))
 
+(add-hook 'cider-mode-hook #'eldoc-mode)
+(setq cider-overlays-use-font-lock t)
+
 (message "... set up clojure...")
 
 (provide 'rel-clojure-cfg)
