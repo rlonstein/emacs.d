@@ -89,6 +89,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
   (expand-file-name (concat user-emacs-directory relative-path)))
 
 (defun add-to-load-path (path-string)
+  "append path to loadpath"
   (message (format "Passed %S..." path-string))
   (if (stringp path-string)
       (when (file-exists-p path-string)
@@ -656,7 +657,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
    (quote
     (("marmalade" . "http://marmalade-repo.org/packages/")
      ("gnu" . "http://elpa.gnu.org/packages/")
-     ("melpa" . "http://melpa.org/packages/"))))
+     ("melpa" . "http://melpa.org/packages/")))) 
  '(package-selected-packages
    (quote
     (ox-gfm ag go-autocomplete gorepl-mode cider ## go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dockerfile-mode docker dash-at-point d-mode color-theme clojure-mode auctex alchemist))))
