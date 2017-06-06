@@ -177,8 +177,12 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (require 'net-utils)
 
 ;; ibuffer is better
-(global-set-key (kbd "C-x C-b") 'ibuffer)
 (autoload 'ibuffer "ibuffer" "List buffers." t)
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+(setq ibuffer-expert t)
+(add-hook 'ibuffer-mode-hook
+          '(lambda ()
+             (ibuffer-auto-mode 1)))
 
 ;; misc things I use
 (require 'strip-whitespace) ; provides strip-trailing-whitespace
@@ -337,6 +341,23 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)
+
+
+;;; Golang related
+(defun my-go-mode-hook () ;; thanks to tleyden
+  ;; Call Gofmt before saving
+  (add-hook 'before-save-hook 'gofmt-before-save)
+  ;; Godef jump key binding
+  (local-set-key (kbd "M-.") 'godef-jump)
+  (local-set-key (kbd "M-*") 'pop-tag-mark))
+(add-hook 'go-mode-hook 'my-go-mode-hook)
+(add-to-list 'exec-path "/Users/rosslonstein/git/rlonstein/go/bin") ; FIXME
+(add-hook 'go-mode-hook 'go-eldoc-setup)
+(setq go-eldoc-gocode "/Users/rosslonstein/git/rlonstein/go/bin/gocode") ; FIXME
+(add-hook 'go-mode-hook #'gorepl-mode)
+(defun auto-complete-for-go ()
+  (auto-complete-mode 1))
+(add-hook 'go-mode-hook 'auto-complete-for-go)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -630,28 +651,16 @@ The value is an ASCII printing character (not upper case) or a symbol."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
-; '(ecb-eshell-buffer-sync nil)
-; '(ecb-layout-window-sizes
-;   (quote
-;    (("left3"
-;      (ecb-directories-buffer-name 0.32947976878612717 . 0.2808988764044944)
-;      (ecb-sources-buffer-name 0.32947976878612717 . 0.3595505617977528)
-;      (ecb-methods-buffer-name 0.32947976878612717 . 0.34831460674157305))
-;     ("left8"
-;      (ecb-directories-buffer-name 0.26595744680851063 . 0.2967032967032967)
-;      (ecb-sources-buffer-name 0.26595744680851063 . 0.24175824175824176)
-;      (ecb-methods-buffer-name 0.26595744680851063 . 0.2857142857142857)
-;      (ecb-history-buffer-name 0.26595744680851063 . 0.16483516483516483)))))
-; '(ecb-options-version "2.40")
  '(org-agenda-files (quote ("/Users/rosslonstein/Documents/todo/todo.org")))
  '(package-archives
    (quote
     (("marmalade" . "http://marmalade-repo.org/packages/")
      ("gnu" . "http://elpa.gnu.org/packages/")
-     ("melpa" . "http://melpa.milkbox.net/packages/"))))
+     ("melpa" . "http://melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (cider ## go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dockerfile-mode docker dash-at-point d-mode color-theme clojure-mode auctex alchemist))))
+    (ox-gfm ag go-autocomplete gorepl-mode cider ## go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dockerfile-mode docker dash-at-point d-mode color-theme clojure-mode auctex alchemist))))
+
 ; ecb
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -663,6 +672,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (setq enh-ruby-bounce-deep-indent t)
 (setq enh-ruby-hanging-brace-indent-level 2)
 (setq ruby-insert-encoding-magic-comment nil)
+
+(require 'ag)
+(setq ag-group-matches nil)
 
 ;yasnippet
 (with-eval-after-load 'yasnippet
