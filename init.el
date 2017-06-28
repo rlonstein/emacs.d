@@ -21,7 +21,6 @@
 ;;   (package-initialize)))
 
 (setq package-enable-at-startup t)
-(package-initialize)
 
 ;; know where we're running, though (featurep 'xemacs) is better
 (defconst +running-xemacs+  (or (featurep 'xemacs) (string-match "XEmacs\\|Lucid" emacs-version)))
@@ -96,7 +95,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
         (message (format "Adding %S to load-path..." path-string))
         (add-to-list 'load-path (expand-file-name path-string)))))
 
-(add-to-load-path +init-file-path+)
+;;(add-to-load-path +init-file-path+)
 
 (let ((my-path-list (cond ((or +is-employer-host+
 			       +running-osx+
@@ -106,6 +105,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
                                  "/rel-modules")))))
   (dolist (p my-path-list) (add-to-load-path (concat +local-elisp-subpath+ p))))
 
+
+
+(package-initialize)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -160,6 +162,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 ;; I hate dired but use it anyway
 (require 'dired)
+(require 'ls-lisp) ;; because all the world is not gnulinux
+(setq ls-lisp-use-insert-directory-program nil)
+(setq ls-lisp-dirs-first t)
 
 ;; post mode for mutt/muttng, unix only
 (if (and (not +running-osx+) (not +running-windows+))
@@ -657,10 +662,10 @@ The value is an ASCII printing character (not upper case) or a symbol."
    (quote
     (("marmalade" . "http://marmalade-repo.org/packages/")
      ("gnu" . "http://elpa.gnu.org/packages/")
-     ("melpa" . "http://melpa.org/packages/")))) 
+     ("melpa" . "http://melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (ox-gfm ag go-autocomplete gorepl-mode cider ## go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dockerfile-mode docker dash-at-point d-mode color-theme clojure-mode auctex alchemist))))
+    (docker-tramp ox-gfm ag go-autocomplete gorepl-mode cider ## go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dockerfile-mode docker dash-at-point d-mode color-theme clojure-mode auctex alchemist))))
 
 ; ecb
 (custom-set-faces
@@ -693,6 +698,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (define-key input-decode-map "\e[1;5B" [C-down])
 (define-key input-decode-map "\e[1;5C" [C-right])
 (define-key input-decode-map "\e[1;5D" [C-left])
+
 
 ;;; and we're done...
 (garbage-collect)
