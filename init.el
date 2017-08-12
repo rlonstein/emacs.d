@@ -357,9 +357,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
   (local-set-key (kbd "M-.") 'godef-jump)
   (local-set-key (kbd "M-*") 'pop-tag-mark))
 (add-hook 'go-mode-hook 'my-go-mode-hook)
-(add-to-list 'exec-path "/Users/rosslonstein/git/rlonstein/go/bin") ; FIXME
+;(add-to-list 'exec-path "/Users/rosslonstein/git/rlonstein/go/bin") ; FIXME
 (add-hook 'go-mode-hook 'go-eldoc-setup)
-(setq go-eldoc-gocode "/Users/rosslonstein/git/rlonstein/go/bin/gocode") ; FIXME
+;(setq go-eldoc-gocode "/Users/rosslonstein/git/rlonstein/go/bin/gocode") ; FIXME
 (add-hook 'go-mode-hook #'gorepl-mode)
 (defun auto-complete-for-go ()
   (auto-complete-mode 1))
@@ -646,17 +646,15 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 (put 'narrow-to-region 'disabled nil)
 
-;; Custom color and faces
-(load-file (localize-load-path "/emacs-color-theme.el"))
-(my-color-theme)
-(message "... face customization...")
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
+ '(custom-safe-themes
+   (quote
+    ("aa6888e4461113e950c43924e583c537005864322629d3515cdd7d4162de7b68" default)))
  '(org-agenda-files (quote ("/Users/rosslonstein/Documents/todo/todo.org")))
  '(package-archives
    (quote
@@ -665,7 +663,16 @@ The value is an ASCII printing character (not upper case) or a symbol."
      ("melpa" . "http://melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (docker-tramp ox-gfm ag go-autocomplete gorepl-mode cider ## go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dockerfile-mode docker dash-at-point d-mode color-theme clojure-mode auctex alchemist))))
+    (docker-tramp ox-gfm ag go-autocomplete gorepl-mode cider ## go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dockerfile-mode docker dash-at-point d-mode clojure-mode auctex alchemist))))
+
+;; Custom color and faces
+;; (load-file (localize-load-path "/emacs-color-theme.el"))
+;; (my-color-theme)
+;; (message "... face customization...")
+
+(load-file (localize-load-path "/color-themes/clarity-theme.el"))
+
+
 
 ; ecb
 (custom-set-faces
