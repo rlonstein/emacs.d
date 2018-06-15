@@ -10,7 +10,6 @@
 
 (add-hook 'clojure-mode-hook (lambda () 
                                (paredit-mode t)
-                               (slime-mode t)
                                (turn-on-eldoc-mode)
                                (unload-feature 'slime-autodoc t)  
                                (define-key clojure-mode-map "{" 'paredit-open-brace)
@@ -18,6 +17,9 @@
 
 (add-hook 'cider-mode-hook #'eldoc-mode)
 (setq cider-overlays-use-font-lock t)
+(setq cider-jack-in-lein-plugins '(("cider/cider-nrepl" "0.15.1")))
+(setq cider-jack-in-dependencies '(("org.clojure/tools.nrepl" "0.2.13")))
+(setq cider-inject-dependencies-at-jack-in t)
 
 (message "... set up clojure...")
 

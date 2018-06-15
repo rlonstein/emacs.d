@@ -123,6 +123,10 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (require 'rel-lib)
 (require 'rel-conveniences)
 (require 'rel-borrowed-snippets)
+(require 'rel-ivy)
+
+;;
+(add-to-list 'auto-mode-alist '("\\.zsh\\'" . sh-mode))
 
 ;; Org Mode, proving to be better than planner
 (require 'rel-org-config)
@@ -341,6 +345,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
         scheme-mode-hook
         slime-mode-hook
         slime-repl-mode-hook
+        clojure-mode-hook
+        cider-mode-hook
+        cider-repl-mode-hook
         t-mode-hook))
 
 ; and ElDoc for hints
@@ -357,9 +364,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
   (local-set-key (kbd "M-.") 'godef-jump)
   (local-set-key (kbd "M-*") 'pop-tag-mark))
 (add-hook 'go-mode-hook 'my-go-mode-hook)
-;(add-to-list 'exec-path "/Users/rosslonstein/git/rlonstein/go/bin") ; FIXME
 (add-hook 'go-mode-hook 'go-eldoc-setup)
-;(setq go-eldoc-gocode "/Users/rosslonstein/git/rlonstein/go/bin/gocode") ; FIXME
 (add-hook 'go-mode-hook #'gorepl-mode)
 (defun auto-complete-for-go ()
   (auto-complete-mode 1))
@@ -387,14 +392,14 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;;
 ;; Function keys should do something too
 ;;
-(global-set-key [f1] (lambda () (interactive) (manual-entry (current-word))))
-(global-set-key [f2] 'undo)
-(global-set-key [M-f2] 'redo)
+;;(global-set-key [f1] (lambda () (interactive) (manual-entry (current-word))))
+;;(global-set-key [f2] 'undo)
+;;(global-set-key [M-f2] 'redo)
 (global-set-key [f3] 'org-agenda)
 (global-set-key [f4] 'rel-comment-line-or-region)
 (global-set-key [f5] 'rel-uncomment-line-or-region)
-(global-set-key [f6] 'switch-to-previous-buffer)
-(global-set-key [f7] 'switch-to-next-buffer)
+;;(global-set-key [f6] 'switch-to-previous-buffer)
+;;(global-set-key [f7] 'switch-to-next-buffer)
 (global-set-key [f10] 'next-error)
 
 ;;
@@ -523,8 +528,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;
 (c-set-offset 'case-label '+)
 
-(require 'icomplete)
-(icomplete-mode 1)
+;(require 'icomplete)
+;(icomplete-mode 1)
 
 
 ; No scrollbar, no menu, no tools. Screen real estate is precious
@@ -663,14 +668,19 @@ The value is an ASCII printing character (not upper case) or a symbol."
      ("melpa" . "http://melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (docker-tramp ox-gfm ag go-autocomplete gorepl-mode cider ## go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dockerfile-mode docker dash-at-point d-mode clojure-mode auctex alchemist))))
+    (elpy jq-mode buffer-move racer rust-mode counsel-dash docker-tramp ox-gfm ag go-autocomplete gorepl-mode cider ## go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dockerfile-mode docker dash-at-point d-mode clojure-mode auctex alchemist)))
+ '(safe-local-variable-values
+   (quote
+    ((cider-refresh-after-fn . "integrant.repl/resume")
+     (cider-refresh-before-fn . "integrant.repl/suspend"))))
+ '(tramp-syntax (quote default) nil (tramp)))
 
 ;; Custom color and faces
 ;; (load-file (localize-load-path "/emacs-color-theme.el"))
 ;; (my-color-theme)
 ;; (message "... face customization...")
 
-(load-file (localize-load-path "/color-themes/clarity-theme.el"))
+;;(load-file (localize-load-path "/color-themes/clarity-theme.el"))
 
 
 
@@ -697,8 +707,28 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (with-eval-after-load 'slime
   '(progn
      (require 'rel-slime-cfg)
-     (require 'rel-clojure-cfg)
      (require 'rel-gauche-cfg)))
+
+;; clojure
+
+(add-to-list 'auto-mode-alist '("\\.clj$" . clojure-mode))
+(add-to-list 'auto-mode-alist '("\\.cljs$" . clojure-mode))
+(add-hook 'clojure-mode-hook
+          (lambda ()
+            (paredit-mode t)
+            (turn-on-eldoc-mode)))
+
+(add-hook 'ciderq-mode-hook #'eldoc-mode)
+(with-eval-after-load 'cider
+  (setq cider-overlays-use-font-lock t)
+  (setq cider-jack-in-lein-plugins '(("cider/cider-nrepl" "0.15.1")))
+  (setq cider-jack-in-dependencies '(("org.clojure/tools.nrepl" "0.2.13")))
+  (setq cider-inject-dependencies-at-jack-in t)
+  (define-key cider-mode-map (kbd "C-c C-b") #'cider-switch-to-repl-buffer)
+  (define-key cider-repl-mode-map (kbd "C-c C-b") #'cider-switch-to-repl-buffer))
+
+;; python
+;;(add-hook 'python-mode-hook 'jedi:setup)
 
 ; maybe fix OSX iTerm2/Emacs keys
 (define-key input-decode-map "\e[1;5A" [C-up])
@@ -706,6 +736,13 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (define-key input-decode-map "\e[1;5C" [C-right])
 (define-key input-decode-map "\e[1;5D" [C-left])
 
+
+;; jq-mode
+(with-eval-after-load "json-mode"
+  (define-key json-mode-map (kbd "C-c C-j") #'jq-interactively))
+
+;; Try company mode
+(add-hook 'after-init-hook 'global-company-mode)
 
 ;;; and we're done...
 (garbage-collect)

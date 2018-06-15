@@ -1,4 +1,5 @@
 ;;; rel-sig.el --- random fortune as signature
+;;; -*- lexical-binding: t -*-
 ;; Copyright (C) 2009, R. Lonstein
 ;; http://creativecommons.org/licenses/MIT/
 

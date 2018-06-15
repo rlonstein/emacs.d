@@ -24,7 +24,8 @@
                (clozure ("/usr/local/bin/ccl"))
                (ecl ("/usr/local/bin/ecl"))))
             (+running-linux+
-             '((sbcl ("/usr/bin/sbcl"))))
+             '((clozure ( "ccl"))
+               (sbcl ("sbcl"))))
             (t '((sbcl ("sbcl"))))))
 
 (require 'slime-autoloads)
@@ -57,6 +58,7 @@
       (cond (+running-osx+ "file:///opt/local/share/doc/lisp/HyperSpec-7-0/HyperSpec/")
             (+running-bsd+ "file:///usr/local/share/doc/clisp-hyperspec/HyperSpec/")
                                         ;(+is-employer-host+ "http://www.lispworks.com/documentation/HyperSpec/")
+            (+running-linux+ "file:///usr/share/doc/hyperspec/")
             (t "http://www.lispworks.com/documentation/HyperSpec/")))
 
 (add-hook 'slime-mode-hook
