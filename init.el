@@ -57,6 +57,11 @@
 ;; loading. YMMV.
 ;;
 
+;; hack for emacs crash on gtk3/x11. Maybe also set XLIB_SKIP_ARGB_VISUALS=1
+;; https://lists.gnu.org/r/bug-gnu-emacs/2018-04/msg00821.html
+(setq default-frame-alist
+      (append default-frame-alist '((inhibit-double-buffering . t))))
+
 ;; Use Common Lisp. Default in XEmacs, deprecated in GNUEmacs. I think
 ;; RMS is wrong on this.
 (if (not +running-xemacs+) (require 'cl))
@@ -254,13 +259,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;; Michele Bini's amazing calc
 (load "mb-calc")
 
-;; Steve Yegge's improved JavaScript mode
-(if (not +running-xemacs+)
-    (progn (autoload 'js2-mode "js2" nil t)
-           (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-           (setq js2-basic-offset 2)
-           (setq js2-use-font-lock-faces t)))
-
 ;;
 ;; Luke Gorrie's Chop -- interactive binary search for a line in a window
 ;;
@@ -301,6 +299,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (setq font-lock-use-colors t)
 (setq font-lock-auto-fontify t)
 (setq font-lock-verbose nil)
+(use-package modern-cpp-font-lock
+  :ensure t)
 
 ; Emacs is smarter than XEmacs here and has a global-font-lock-mode
 (when (not +running-xemacs+)
@@ -523,11 +523,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (setq gnus-sum-thread-tree-single-leaf "`-> ")
 
 
-;
-; Indent case label from switch on C modes
-;
-(c-set-offset 'case-label '+)
-
 ;(require 'icomplete)
 ;(icomplete-mode 1)
 
@@ -663,12 +658,11 @@ The value is an ASCII printing character (not upper case) or a symbol."
  '(org-agenda-files (quote ("/Users/rosslonstein/Documents/todo/todo.org")))
  '(package-archives
    (quote
-    (("marmalade" . "http://marmalade-repo.org/packages/")
-     ("gnu" . "http://elpa.gnu.org/packages/")
+    (("gnu" . "http://elpa.gnu.org/packages/")
      ("melpa" . "http://melpa.org/packages/"))))
  '(package-selected-packages
    (quote
-    (elpy jq-mode buffer-move racer rust-mode counsel-dash docker-tramp ox-gfm ag go-autocomplete gorepl-mode cider ## go-dlv go-scratch yari yaml-mode sws-mode slime rvm org markdown-mode magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dockerfile-mode docker dash-at-point d-mode clojure-mode auctex alchemist)))
+    (web-mode gnu-elpa-keyring-update cider clojure-mode clojure-mode-extra-font-locking d-mode flim semi org-caldav org-clock-convenience projectile-mode projectile use-package flycheck-irony flycheck clang-format company-c-headers company-irony modern-cpp-font-lock irony realgud dracula-theme buffer-move counsel-dash docker-tramp ox-gfm ag go-autocomplete gorepl-mode ## go-dlv go-scratch yari yaml-mode sws-mode rvm org magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dash-at-point auctex)))
  '(safe-local-variable-values
    (quote
     ((cider-refresh-after-fn . "integrant.repl/resume")
@@ -721,11 +715,14 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (add-hook 'ciderq-mode-hook #'eldoc-mode)
 (with-eval-after-load 'cider
   (setq cider-overlays-use-font-lock t)
-  (setq cider-jack-in-lein-plugins '(("cider/cider-nrepl" "0.15.1")))
-  (setq cider-jack-in-dependencies '(("org.clojure/tools.nrepl" "0.2.13")))
+;  (setq cider-jack-in-lein-plugins '(("cider/cider-nrepl" "0.21.1")))
+;  (setq cider-jack-in-dependencies '(("org.clojure/tools.nrepl" "0.6.0")))
   (setq cider-inject-dependencies-at-jack-in t)
   (define-key cider-mode-map (kbd "C-c C-b") #'cider-switch-to-repl-buffer)
-  (define-key cider-repl-mode-map (kbd "C-c C-b") #'cider-switch-to-repl-buffer))
+  (define-key cider-repl-mode-map (kbd "C-c C-b") #'cider-switch-to-repl-buffer)):
+
+(with-eval-after-load 'nim-mode
+  (setq nimsuggest-path "/home/lonstein/.nimble/bin/nimsuggest"))
 
 ;; python
 ;;(add-hook 'python-mode-hook 'jedi:setup)
@@ -741,8 +738,29 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (with-eval-after-load "json-mode"
   (define-key json-mode-map (kbd "C-c C-j") #'jq-interactively))
 
-;; Try company mode
+;; I like company mode
 (add-hook 'after-init-hook 'global-company-mode)
+
+;;
+;; Indent case label from switch on C modes
+;;
+(setq c-default-style "stroustrup"
+      c-basic-offset 2)
+(c-set-offset 'case-label '+)
+(c-set-offset 'arglist-intro '+)
+(add-hook 'c++-mode-hook 'irony-mode)
+(add-hook 'c-mode-hook 'irony-mode)
+(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
+(eval-after-load 'flycheck
+  '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
+(require 'projectile)
+(define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
+(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+(projectile-mode +1)
 
 ;;; and we're done...
 (garbage-collect)
