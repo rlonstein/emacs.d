@@ -10,46 +10,21 @@
 
 (setq debug-on-error t) ; disabled at end
 
+(require 'package)
+(setq package-enable-at-startup t)
+
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(package-initialize) 
+
 ;(setq inhibit-default-init t)
 (setq message-log-max 1000)
 
-;; (when (< emacs-major-version 24)
-;;   (progn
-;;     (require 'package)
-;;     (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
-;;     (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
-;;   (package-initialize)))
+;;; detect local variations
+(defun dot-emacs (relative-path)
+  "Return the full path of a file in the user's emacs directory."
+  (expand-file-name (concat user-emacs-directory relative-path)))
 
-(setq package-enable-at-startup t)
-
-;; know where we're running, though (featurep 'xemacs) is better
-(defconst +running-xemacs+  (or (featurep 'xemacs) (string-match "XEmacs\\|Lucid" emacs-version)))
-(defconst +running-osx+     (equal 'darwin system-type))
-(defconst +running-carbon-emacs+ (featurep 'mac-carbon))
-(defconst +running-windows+ (equal 'windows system-type))
-(defconst +running-bsd+     (equal 'berkeley-unix system-type))
-(defconst +running-linux+   (equal 'gnu/linux system-type))
-(defconst +is-employer-host+ (cond
-			    ((file-directory-p (expand-file-name "/ms/dev/")) t)
-			    (+running-osx+ nil)
-			    (t nil)))
- 
-(defconst +homedir+ (expand-file-name "~")) ; there's no place like $HOME 
-(defconst +perl+ 
-  (cond (+is-employer-host+ "/ms/dist/perl5/bin/perl5.8")
-        (+running-osx+ "/opt/local/bin/perl")
-        (+running-bsd+ "/usr/pkg/bin/perl")
-        (t "perl")))
-(defconst +local-elisp-subpath+
-  (concat +homedir+ "/"
-          (cond (+is-employer-host+
-                 (if +running-windows+ "elisp") "/.emacs.d")
-                ((or +running-bsd+ +running-osx+ +running-linux+) ".emacs.d")
-                (t                  "emacsen"))))
-
-(defconst +init-file-path+ (file-name-directory user-init-file))
-
-(defvar *is-clbuild* nil) ; toggle in clbuild/.start-slime.el
+(load (dot-emacs "./01-env-local"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -59,8 +34,8 @@
 
 ;; hack for emacs crash on gtk3/x11. Maybe also set XLIB_SKIP_ARGB_VISUALS=1
 ;; https://lists.gnu.org/r/bug-gnu-emacs/2018-04/msg00821.html
-(setq default-frame-alist
-      (append default-frame-alist '((inhibit-double-buffering . t))))
+;; (setq default-frame-alist
+;;       (append default-frame-alist '((inhibit-double-buffering . t))))
 
 ;; Use Common Lisp. Default in XEmacs, deprecated in GNUEmacs. I think
 ;; RMS is wrong on this.
@@ -88,9 +63,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
         (message "Library %s not found." library)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun dot-emacs (relative-path)
-  "Return the full path of a file in the user's emacs directory."
-  (expand-file-name (concat user-emacs-directory relative-path)))
 
 (defun add-to-load-path (path-string)
   "append path to loadpath"
@@ -100,8 +72,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
         (message (format "Adding %S to load-path..." path-string))
         (add-to-list 'load-path (expand-file-name path-string)))))
 
-;;(add-to-load-path +init-file-path+)
-
 (let ((my-path-list (cond ((or +is-employer-host+
 			       +running-osx+
 			       +running-linux+
@@ -109,10 +79,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 			   (list "/misc"
                                  "/rel-modules")))))
   (dolist (p my-path-list) (add-to-load-path (concat +local-elisp-subpath+ p))))
-
-
-
-(package-initialize)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -299,8 +265,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (setq font-lock-use-colors t)
 (setq font-lock-auto-fontify t)
 (setq font-lock-verbose nil)
-(use-package modern-cpp-font-lock
-  :ensure t)
 
 ; Emacs is smarter than XEmacs here and has a global-font-lock-mode
 (when (not +running-xemacs+)
@@ -653,30 +617,20 @@ The value is an ASCII printing character (not upper case) or a symbol."
  ;; If there is more than one, they won't work right.
  '(column-number-mode t)
  '(custom-safe-themes
-   (quote
-    ("aa6888e4461113e950c43924e583c537005864322629d3515cdd7d4162de7b68" default)))
- '(org-agenda-files (quote ("/Users/rosslonstein/Documents/todo/todo.org")))
+   '("79586dc4eb374231af28bbc36ba0880ed8e270249b07f814b0e6555bdcb71fab" "aa6888e4461113e950c43924e583c537005864322629d3515cdd7d4162de7b68" default))
+ '(delete-selection-mode nil)
+ '(org-agenda-files '("/Users/rosslonstein/Documents/todo/todo.org"))
  '(package-archives
-   (quote
-    (("gnu" . "http://elpa.gnu.org/packages/")
-     ("melpa" . "http://melpa.org/packages/"))))
+   '(("melpa" . "https://melpa.org/packages/")
+     ("gnu" . "https://elpa.gnu.org/packages/")))
  '(package-selected-packages
-   (quote
-    (web-mode gnu-elpa-keyring-update cider clojure-mode clojure-mode-extra-font-locking d-mode flim semi org-caldav org-clock-convenience projectile-mode projectile use-package flycheck-irony flycheck clang-format company-c-headers company-irony modern-cpp-font-lock irony realgud dracula-theme buffer-move counsel-dash docker-tramp ox-gfm ag go-autocomplete gorepl-mode ## go-dlv go-scratch yari yaml-mode sws-mode rvm org magit-tramp magit-gitflow lua-mode json-mode jade-mode inf-ruby haml-mode graphviz-dot-mode golint go-snippets go-eldoc flymake-yaml enh-ruby-mode elixir-yasnippets edts dash-at-point auctex)))
+   '(ecb flycheck-d-unittest flycheck-elixir flycheck-golangci-lint flycheck-nim flycheck-pycheckers flycheck-pyflakes flymake-go flymake-json flymake-perlcritic go-dlv go-eldoc jq-mode js2-mode magit magit-gitflow marginalia nim-mode org ox-gfm protobuf-mode python-mode rust-mode rustic semi slime urlenc yaml cargo cargo-mode clang-format cmake-mode company-ctags company-go company-irony company-shell d-mode darcula-theme dfmt yasnippet yaml-mode web-mode use-package-ensure-system-package use-package-el-get tramp realgud projectile mmm-mode json-mode highlight-escape-sequences flycheck-rust flycheck-irony flycheck-dmd-dub flycheck-clojure filladapt eldoc counsel company auctex ag))
  '(safe-local-variable-values
-   (quote
-    ((cider-refresh-after-fn . "integrant.repl/resume")
-     (cider-refresh-before-fn . "integrant.repl/suspend"))))
- '(tramp-syntax (quote default) nil (tramp)))
-
-;; Custom color and faces
-;; (load-file (localize-load-path "/emacs-color-theme.el"))
-;; (my-color-theme)
-;; (message "... face customization...")
-
-;;(load-file (localize-load-path "/color-themes/clarity-theme.el"))
-
-
+   '((cider-refresh-after-fn . "integrant.repl/resume")
+     (cider-refresh-before-fn . "integrant.repl/suspend")))
+ '(show-paren-mode t)
+ '(tool-bar-mode nil)
+ '(tramp-syntax 'default nil (tramp)))
 
 ; ecb
 (custom-set-faces
@@ -684,11 +638,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
-
-(setq enh-ruby-bounce-deep-indent t)
-(setq enh-ruby-hanging-brace-indent-level 2)
-(setq ruby-insert-encoding-magic-comment nil)
+ '(default ((t (:family "Iosevka Term Slab" :foundry "UKWN" :slant normal :weight semi-bold :height 120 :width normal)))))
 
 (require 'ag)
 (setq ag-group-matches nil)
@@ -753,8 +703,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
 
 (use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode))
+  :ensure t)
 (eval-after-load 'flycheck
   '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
 (require 'projectile)
@@ -767,6 +716,9 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 (when debug-on-error
   (setq debug-on-error nil))
+
+(require 'darcula-theme)
+(load-theme 'darcula t)
 
 (message "Completed load of Ross's customizations.")
 

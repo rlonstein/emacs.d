@@ -1,48 +1,100 @@
-;	$Id: post.el,v 1.10 2008/02/24 23:49:23 rreid Exp $
-;; post.el --- Use (X?)Emacs(client) as an external editor for mail and news.
- 
+;; post.el --- Use Emacs(client) as an external editor for mail and news.
+
+;;; This file is a fork, maintained by Boruch Baum <boruch_baum@gmx.com>
+;;; 2017-    https://github.com/Boruch-Baum/post-mode
+;;; Original colophon follows:
+
 ;;; Authors: Eric Kidd <eric.kidd@pobox.com>,
 ;;;          Dave Pearson <davep@davep.org>,
-;;;          Rob Reid <rreid@nrao.edu>,
+;;;          Rob Reid <barlennan@gmail.com>,
 ;;;          Roland Rosenfeld <roland@spinnaker.de>
 
-;; This is free software distributed under the GPL, yadda, yadda, yadda.
-;; It has no warranty. See the GNU General Public License for more
-;; information. Send us your feature requests and patches, and we'll try
-;; to integrate everything.
+;;; Copyright 1999, 2002, 2004, 2008, 2014 Eric Kidd, Dave Pearson,
+;;; Rob Reid, and Roland Rosenfeld.
 
-;;; Maintainers: Rob Reid <rreid@nrao.edu> and
-;;;              Philip J. Hollenback <philiph@pobox.com>
+;;; This program is free software: you can redistribute it and/or
+;;; modify it under the terms of the GNU General Public License as
+;;; published by the Free Software Foundation, either version 3 of the
+;;; License, or (at your option) any later version.
+;;;
+;;; This program is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+;;;
+;;; You should have received a copy of the GNU General Public License
+;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Maintainers: Eric Dorland <eric@kuroneko.ca> and
+;;;              Rob Reid <barlennan@gmail.com>
 
 ;;; Keywords: mail
 
 ;;; Commentary:
-;; This is a major mode for use with mutt (http://www.mutt.org/), slrn, or most
-;; email and newsreaders that allow you to use an external editor.
 ;;
+;; This is a major mode for use with mutt (http://www.mutt.org/),
+;; neomutt (https://neomutt.org), slrn (http://slrn.sourceforge.net/),
+;; or most email and newsreaders that allow you to use an external
+;; editor.
+;;
+;; The orignal version of this mode was/is:
+;;   https://github.com/zedinosaur/post-mode
+;; This forked version is:
+;;   https://github.com/Boruch-Baum/post-mode
+
 ;; Installation:
 ;;
-;; Add the following line to the .emacs(.el) file in your home directory:
 ;;
-;;   (load "/your/local/path/to/this/file/post")
+;; 1] Add a few lines to emacs init file (usually ~/.emacs).
 ;;
-;; Note that you can omit the ".el" from the file name when calling load.
+;; 1.1] If you manually downloaded this file and want to make this
+;;      package available to all your users, type "C-h v load-path
+;;      RET", pick an appropriate system-wide directory for `post.el',
+;;      and modify your sitewide default.el to include:
 ;;
-;; If you want to make it available to all your users, type \C-h v
-;; load-path RET, pick an appropriate directory for post.el, and modify
-;; your sitewide default.el to (require 'post).
+;;        (require 'post).
 ;;
-;; You may find the latest version of this mode at
-;; http://www.cv.nrao.edu/~rreid/software/email/ or possibly
-;; http://sourceforge.net/projects/post-mode/
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 1.2] If you installed this package using your distribution's
+;;      package manager (eg. for debian, apt-get post-el) or using
+;;      the emacs package manager, or if you manually copied this
+;;      file to a directory already on your emacs load path ("C-h v
+;;      load-path" to see):
 ;;
-;; BUGS:
+;;        (require 'post)
 ;;
-;; Rob: I predict that some buffers (*Original*<2>, *Composing*<2>?)
-;; will be left behind if you edit more than one message at a time.
+;; 1.3] If you manually copied this file elsewhere and want to
+;;      add that directory to your emacs load path:
+;;
+;;        (add-to-list 'load-path "path/to/directory/")
+;;        (require 'post)
+;;
+;; 1.4] If you manually copied this file elsewhere and don't want
+;;      to add that directory to your emacs load path:
+;;
+;;        (load "/your/local/path/to/this/file/post")
+;;
+;;      Note that you can omit the ".el" from the file name when
+;;      calling load.
+;;
+;; 2] Optionally, here are some additional settings to consider
+;;    adding after the above, as a good start to making your user
+;;    experience a bit nicer:
+;;
+;;      (defun my-post-mode-hook()
+;;        (setq
+;;          fill-column 72    ; rfc 1855 for usenet messages
+;;          post-signature-source-is-file t
+;;          post-variable-signature-source "~/mutt/.signatures.fortune"
+;;          post-fixed-signature-source    "~/mutt/.signature"
+;;          post-signature-directory       "~/mutt/.signatures/"
+;;          post-signature-wildcard        "sig*"
+;;          post-random-signature-command  "fortune ~/mutt/.signatures.fortune"
+;;          post-kill-quoted-sig t
+;;          post-should-prompt-for-attachment "Smart")
+;;        (footnote-mode)
+;;        (flyspell-mode)
+;;        (require 'boxquote))
+;;      (add-hook 'post-mode-hook 'my-post-mode-hook)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -57,280 +109,11 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Revision History
-;;;
-;;; $Log: post.el,v $
-;;; Revision 1.10  2008/02/24 23:49:23  rreid
-;;; *** empty log message ***
-;;;
-;;; Revision 1.9  2008/02/24 23:46:23  rreid
-;;; I really hate the way RCS/VC mucks around with the version number and log.
-;;; It's not as dwim as it thinks it is.
-;;;
-;;; Revision 1.8  2008/02/24 23:43:46  rreid
-;;; Updated email address.
-;;;
-;;; Revision 2.402  2008/02/24 23:31:19  rreid
-;;; Emacs 22 finally fixed (how-many) to return an int instead of a string,
-;;; i.e. 13 instead of '13 occurrences'.  A few people noticed that the change
-;;; broke my workaround, but Erik Mugele submitted the winning patch that works
-;;; for all emacs versions (I hope).
-;;;
-;;; This, and the below, are real entries, with real version numbers.  Some of
-;;; the above are fake commits to get the version number back in sync.
-;;;
-;;; Revision 2.401  2004/07/23 16:27:29  rreid
-;;; Fixed post-delete-quoted-signatures to not remove sneaky things like quoted
-;;; double dash arrows.  Thanks go to Felix Klee for a clear bug report.
-;;;
-;;; Revision 2.4  2002/04/22 22:04:29  reid
-;;; Tweaked post-emoticon-pattern yet again.  Made cl mandatory for all
-;;; versions of emacs.  (Thanks to Eric Dorland and Mike Schiraldi for bug
-;;; reports.)  Fixed post-unquote-region.  (Thanks to Mike Schiraldi for the
-;;; bug report.)
-;;;
-;;; Revision 2.3  2002/04/21 20:13:55  reid
-;;; Improved post-emoticon-pattern.
-;;;
-;;; Revision 2.2  2002/04/20 04:12:54  reid
-;;; Improved post-emoticon-pattern.
-;;;
-;;; Revision 2.1  2002/04/20 03:17:48  reid
-;;; - A major (but not total) synchronization with Dave Pearson's post-mode.
-;;;   header-set-followup-to and header-set-organization should work now.
-;;; - Syntax highlighting now works for quoted email addresses and URLs.
-;;; - *bold* words are now highlighted.
-;;; - Emoticons can now be highlighted, and the default regexp,
-;;;   post-emoticon-pattern, might be too enthusiastic for your taste.  In case
-;;;   you're curious, I verified that gnus' smiley-ems.el works with post, but I
-;;;   decided that it wasn't ideal.
-;;; - post-url-text-pattern changed to post-url-pattern and made more enthusiastic.
-;;;
-;;; revision 1.95 2002/04/10 00:06:26 reid
-;;; Fixed the regexp in post-kill-signature to not delete everything between
-;;; mutt's standard forwarding lines.  post-kill-signature is called indirectly
-;;; by many functions.
-;;;
-;;; Revision 1.9  2002/04/04 22:24:31  reid
-;;; Applied a patch (not quite verbatim) from The Anarcat
-;;; <anarcat@anarcat.dyndns.org> to make the entity separating siglets in
-;;; `post-variable-signature-source' a regexp, `post-signature-sep-regexp'.  The
-;;; default works either either the old post file format or strfiled (fortune)
-;;; files.
-;;;;
-;;; Changed default `post-random-signature-command' to `fortune
-;;; ~/.mutt/sigs.fortune'.
-;;;
-;;; `post-random-signature-command' should now NOT supply a fixed sig portion!
-;;;
-;;; (post-el-random-signature) supplied by The Anarcat to do random sig
-;;; selection purely within Emacs Lisp.
-;;;
-;;; Revision 1.8  2002/02/06 22:24:31  eric
-;;; clean up
-;;;
-;;; Revision 1.7.2  2002/02/06 22:17:01  eric
-;;; tweak regexps, make font-lock-comment-face be post-signature-text-face
-;;;
-;;; Revision 1.7.1  2002/02/06 21:58:58  eric
-;;; tweak regexp, change some types to regexp
-;;;
-;;; Revision 1.7.0  2002/02/06 21:36:56  eric
-;;; hilight signatures, urls and emails
-;;;
-;;; Revision 1.6.3.10  1999/10/11 00:29:41  roland
-;;; Corrected color quoting again: Now allows ">" in the middle of
-;;; a line which is quoted twice.
-;;;
-;;; Revision 1.6.3.9  1999/10/08 10:43:18  roland
-;;; Add third level of quoting faces.
-;;; Allow super-cite name prefixes before quote signs.
-;;;
-;;; Revision 1.6.3.8  1999/10/08 08:39:00  roland
-;;; post-font-lock-keywords now detects lines with only "> "in it
-;;; correctly (merged following line into it before).
-;;;
-;;; Revision 1.6.3.7  1999/10/04 10:07:48  roland
-;;; Add post-quote-region and post-unquote-region commands to quote and
-;;; unquote a region (one level).
-;;;
-;;; Revision 1.6.3.6  1999/09/03 23:13:55  reid
-;;; Valeriy E. Ushakov <uwe@ptc.spbu.ru> pointed out that (GNU) Emacs <20 has
-;;; fewer (optional) arguments to (read-string) than what I was using to
-;;; inherit the input method.  I didn't find a way off the top of my head
-;;; to redefine (read-string) without causing an infinite loop, so I have
-;;; substituted a macro (string-read prompt) which does the right thing,
-;;; so please use it instead of read-string.
-;;;
-;;; Revision 1.6.3.5  1999/08/29 19:58:49  reid
-;;; Changed default post-mail-message to handle hostnames with digits.
-;;; Thanks to Brian D. Winters <brianw@alumni.caltech.edu>.
-;;;
-;;; Revision 1.6.3.4  1999/03/20 03:02:05  reid
-;;; Made post compatible with emacs as far back as 19.28.1, probably
-;;; farther.
-;;;
-;;; Revision 1.6.3.3  1999/03/16 03:14:07  reid
-;;; Cleaned up post-select-signature-select-sig-from-file code.
-;;;
-;;; Revision 1.6.3.2  1999/03/16 03:05:12  reid
-;;; Fixed alist updating.
-;;;
-;;; Revision 1.6.3.1  1999/03/13 02:23:48  reid
-;;; Added defface to the list of things that get defined if customize
-;;; hasn't already done it.  Thanks to Melissa Binde for the bug report.
-;;;
-;;; Modified post-body-says-attach to use a regexp,
-;;; post-attachment-regexp, so that something like "\(attach\|anbringen\)"
-;;; can be used by bilingual people like Roland.
-;;;
-;;; Revision 1.6.2.1  1999/03/12 10:16:11  roland
-;;; Added missing () to post-insert-to-auto-mode-alist-on-load.
-;;;
-;;; Revision 1.6.2 1999/03/11 15:51 Dave Pearson
-;;; header-position-on-value fixed to return (point), and
-;;; defcustom macro provided for Emacs 19 users.
-;;;
-;;; Revision 1.6.1.2  1999/03/06 11:24:43  roland
-;;; Added post-insert-to-auto-mode-alist-on-load.
-;;;
-;;; Revision 1.6.1.1  1999/03/06 11:02:27  roland
-;;; Customized renaming of buffer.
-;;; Removed different handling for mail, news, news-reply.
-;;; Fixed problems with easy-menu under XEmacs.
-;;;
-;;; Revision 1.6.0 1999/03/04 18:04 Rob Reid
-;;; Returned post-signature-pattern to using "--" instead of "-- "
-;;; because some senders have broken MTAs (as Eric reminded me) and
-;;; some users don't use procmail to compensate.  This time all of the
-;;; functions dealing with signatures have been smartened up to avoid
-;;; false matches.  Unfortunately that means they don't use
-;;; post-signature-pattern in its raw form.
-;;;
-;;; Added post-backup-original so that Dave's post-copy-original can
-;;; be used.
-;;;
-;;; Kevin Rodgers explained how to put this in .emacs to fix the
-;;; server-process-filter's annoying message problem:
-;;;
-;;; Revision 1.1  1999/03/04 18:02:30  reid
-;;; Initial revision
-;;;
-;;; %%%%%%%%%%%% Put in .emacs %%%%%%%%%%%
-;;;
-;;; ;;; Email
-;;; (server-start)
-;;; (load "/home/reid/.mutt/post")
-;;; (defadvice server-process-filter (after post-mode-message first activate)
-;;;    "If the buffer is in post mode, overwrite the server-edit
-;;;    message with a post-save-current-buffer-and-exit message."
-;;;    (if (eq major-mode 'post-mode)
-;;;        (message
-;;;         (substitute-command-keys "Type \\[describe-mode] for help composing; \\[post-save-current-buffer-and-exit] when done."))))
-;;; ; This is also needed to see the magic message.  Set to a higher
-;;; ; number if you have a faster computer or read slower than me.
-;;; '(font-lock-verbose 1000)
-;;; ; (setq server-temp-file-regexp "mutt-")
-;;; (add-hook 'server-switch-hook
-;;;         (function (lambda()
-;;;                     (cond ((string-match "Post" mode-name)
-;;;                            (post-goto-body))))))
-;;;
-;;; %%%%%%%%% We now return to our regular commentary %%%%%%%%%
-;;;
-;;; Eric Kidd asked that the name of Headers mode be changed so that
-;;; it doesn't conflict with mutt-mode's Headers, so I changed it to
-;;; just Header (no s).
-;;;
-;;; Revision 1.5? 1999/02/27 17:30 Rob Reid
-;;; I had a go at combining Dave Pearson's post mode with Eric Kidd's
-;;; Mutt mode.  Since Dave Pearson's post mode explicitly handles news as
-;;; well as email, and this should be useful for more than just mutt,
-;;; I'm calling it post mode.  I also added functions for picking
-;;; random signatures, selecting a signature from a file, and
-;;; intelligently (IMHO) prompting the user for an attachment when
-;;; necessary.  Changed mutt-save-buffer-and-exit to work better with
-;;; emacsclient, and some of the key bindings.  post-signature-pattern
-;;; now defaults to use "-- " instead of "--", and I have far less
-;;; trouble this way (I use procmail to clean up braindead "--"s.).  I
-;;; don't know why Eric warned against trailing whitespace.
-;;;
-;;; Revision 1.4  1998/04/11 00:05:46  emk
-;;; Fixed font-lock bug. Also made mutt-mode a little more careful about
-;;; saving various bits of Emacs state when moving around the buffer.
-;;;
-;;; Revision 1.3  1998/03/25 00:37:36  emk
-;;; Added support for menus and font-lock mode, plus a few bug fixes.
-;;;
-;;; Revision 1.2  1998/03/24 13:19:46  emk
-;;; Major overhaul--more commands, a minor mode for header editing, and other
-;;; desirable features. Attaching files seems to be broken, though.
-;;;
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Required Packages
-
-(require 'cl)
-(require 'derived)
-(require 'easymenu)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Customization Support
 ;;;
 ;;; Set up our customizable features. You can edit these (and lots of other
 ;;; fun stuff) by typing M-x customize RET. The Post preferences can be
 ;;; found under the [Applications] [Mail] category.
-
-;; Make post mode a bit more compatible with older (i.e. <20) versions of emacs.
-;;; Code:
-(eval-and-compile
-  ;; Dumb down read-string if necessary.
-  ;; The number of optional arguments for read-string seems to increase
-  ;; sharply with (emacs-version).  Since old versions of emacs are a large
-  ;; source of bug reports it might be worth writing (or looking for)
-  ;; (bug-report reid@astro.utoronto.ca) which emails me the result of
-  ;; (emacs-version) along with a user supplied description of the problem.
-  ;; GNU Emacs 19.28.1 only has INITIAL-STRING as an optional argument.
-  ;; 19.34.1 has (read-string PROMPT &optional INITIAL-INPUT HISTORY).  20.2.1
-  ;; has (read-string PROMPT &optional INITIAL-INPUT HISTORY DEFAULT-VALUE
-  ;; INHERIT-INPUT-METHOD).
-  ;; Since I haven't found a way of redefining read-string without causing an
-  ;; infinite loop, please use (string-read prompt).
-  (if (< (string-to-number (substring (emacs-version)
-				      (string-match "[0-9]+\.[0-9]"
-					 (emacs-version) 5))) 20)
-      (defmacro string-read (prompt) (` (read-string (, prompt))))
-      (defmacro string-read (prompt)
-	(` (read-string (, prompt) nil nil nil t))))
-
-  ;; XEmacs gnuserv uses slightly different functions than the GNU Emacs
-  ;; server, and some people are still wasting time and CPU cycles by starting
-  ;; up a new emacs each time.
-  (fset 'post-finish (cond ((fboundp 'server-edit)
-			    'server-edit)
-			   ((fboundp 'gnuserv-kill-buffer-function)
-			    'gnuserv-kill-buffer-function)
-			   (t
-			    'save-buffers-kill-emacs)))
-;;   (cond ((fboundp 'server-edit)
-;; 	 (fset 'post-finish 'server-edit))
-;; 	((fboundp 'gnuserv-kill-buffer-function)
-;; 	 (fset 'post-finish 'gnuserv-kill-buffer-function))
-;; 	(t
-;; 	 (fset 'post-finish 'save-buffers-kill-emacs)))
-   
-  ;; If customize isn't available just use defvar instead.
-  (unless (fboundp 'defgroup)
-    (defmacro defgroup  (&rest rest) nil)
-    (defmacro defcustom (symbol init docstring &rest rest)
-      ; The "extra" braces and whitespace are for emacs < 19.29.
-      (` (defvar (, symbol) (, init) (, docstring))))
-    (defmacro defface (&rest args) nil))
-  (unless (fboundp 'buffer-substring-no-properties)
-    (fset 'buffer-substring-no-properties 'buffer-substring)))
 
 (defgroup post nil
   "Composing e-mail messages with Post.
@@ -347,14 +130,14 @@ is very primitive), you can type \\[fill-paragraph] to rewrap the paragraph."
   :type 'boolean
   :group 'post)
 
-(defcustom post-mail-message "mutt-[a-z0-9]+-[0-9]+-[0-9]+.*\\'"
+(defcustom post-mail-message "\\(mutt\\(ng\\)?-[a-zA-Z0-9-.]+-[0-9]+-[0-9]+\\(-[a-fA-F0-9]+\\)?\\|mutt\\(ng\\)?[a-zA-Z0-9._-]\\{6\\}\\)\\'"
   "*Regular expression which matches your mailer's temporary files."
-  :type 'string
+  :type 'regexp
   :group 'post)
 
 (defcustom post-news-posting "\\.\\(followup\\|letter\\|article\\)$"
   "*Regular expression which matches your news reader's composition files."
-  :type 'string
+  :type 'regexp
   :group 'post)
 
 (defcustom post-backup-original nil
@@ -362,7 +145,7 @@ is very primitive), you can type \\[fill-paragraph] to rewrap the paragraph."
   :type 'boolean
   :group 'post)
 
-(defcustom post-signature-pattern "\\(--\\|Cheers,\\|\\)"
+(defcustom post-signature-pattern "\\(--\\|\\)"
   "*Pattern signifying the beginning of signatures.
 It should not contain trailing whitespace unless you know what you're doing."
   :type 'regexp
@@ -437,7 +220,7 @@ contains post-attachment-regexp."
 		 (const Always))
   :group 'post)
 
-(defcustom post-attachment-regexp "attach"
+(defcustom post-attachment-regexp "^[ \t\f]*[^>].*attach"
   "*This is what post looks for in the body if
 post-should-prompt-for-attachment is 'Smart'."
   :type 'regexp
@@ -465,6 +248,7 @@ post-should-prompt-for-attachment is 'Smart'."
 (defcustom post-quote-start "> "
   "Pattern which is added (or removed) at the beginning of the line by
 comment-region"
+  :type 'string
   :group 'post)
 
 (defcustom post-email-address-pattern
@@ -474,7 +258,7 @@ comment-region"
   :group 'post)
 
 (defcustom post-url-pattern
-  '("\\<\\(\\(https?\\|news\\|mailto\\|ftp\\|gopher\\):\\|\\(www\\|ftp\\)\\.\\)[-~A-Za-z0-9._/%$+?#]+[A-Za-z0-9/#]" "<URL:[^ ]+>")
+  '("\\<\\(\\(https?\\|news\\|mailto\\|ftp\\|gopher\\):\\|\\(www\\|ftp\\)\\.\\)[-~A-Za-z0-9._/%$+?#:;&=]+[A-Za-z0-9/#&=]" "<URL:[^ ]+>")
   "Pattern to detect URL addresses."
   :type '(repeat regexp)
   :group 'post)
@@ -490,8 +274,8 @@ comment-region"
   :group 'post)
 
 (defcustom post-emoticon-pattern '("[0O(<{}]?[;:8B|][.,]?[-+^*o0O][{<>/\|]?[][)>(<|/\P][)>]?"
-			"\\s [(<]?[][)>(<|/\][}<>|]?[-+^*oO0][,.]?[:8][0O>]?"
-			"\\s [;:][][P)\/(]" "\\s [][)(P\/][:;]"
+			"[(<]?[][)>(<|/\][}<>|]?[-+^*oO0][,.]?[:8][0O>]?"
+			"[;:][][P)\/(]" "\\s [][)(P\/][:;]"
 				   "<[Gg]>" "<[BbSs][Gg]>")
   "*List of regular expressions that define a emoticon."
   :type '(repeat regexp)
@@ -578,6 +362,9 @@ comment-region"
   "Face used for text that is part of a signature"
   :group 'post-faces)
 
+(defvar post-signature-text-face 'post-signature-text-face
+  "Face name to use for text that is part of a signature")
+
 (defface post-email-address-text-face
   '((((class color)
       (background light))
@@ -639,11 +426,16 @@ comment-region"
   :group 'post-faces)
 
 ; Note: some faces are added later!
+
+(defvar post-quoted-text-pattern
+  "^[ \t\f]*\\(>[ \t\f]*\\)\\([-a-zA-Z]*>[ \t\f]*\\)\\([-a-zA-Z]*>.*\\)$"
+  "Regexp for recognizing quoted text")
+
 (defvar post-font-lock-keywords
   `(("^\\([A-Z][-A-Za-z0-9.]+:\\)\\(.*\\)$"
      (1 'post-header-keyword-face)
      (2 'post-header-value-face))
-    ("^[ \t\f]*\\(>[ \t\f]*\\)\\([-a-zA-Z]*>[ \t\f]*\\)\\([-a-zA-Z]*>.*\\)$"
+    (,post-quoted-text-pattern
      (1 'post-quoted-text-face)
      (2 'post-double-quoted-text-face)
      (3 'post-multiply-quoted-text-face))
@@ -683,12 +475,20 @@ post-signature-text-face)
 (defvar post-has-attachment nil
  "Whether the message has an attachment.")
 
+(defvar post-ispell-skip-alist
+  `(("^[A-Z][-A-Za-z0-9]+:")
+	("^\\(To|Cc|Bcc|From|Reply-To\\): .*$")
+    (,post-url-pattern)
+    (,post-email-address-pattern)
+    (,post-quoted-text-pattern))
+  "What ispell should skip in buffer")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Interactive Commands
 
 (defun post-save-current-buffer-and-exit ()
-  "Save the current buffer and exit Emacs."
+  "Save the current buffer and exit Emacs or its client session"
   (interactive)
 
   ;; Should the user be prompted for an attachment?
@@ -703,12 +503,13 @@ post-signature-text-face)
   (if post-backup-original
       (kill-buffer "*Original*"))
 
-  (post-finish)
-
-  ;; Added by Rob Reid 10/13/1998 to prevent accumulating *Composing* buffers
-  ;; when using (emacs|gnu)client.  Helped by Eric Marsden's Eliza example in
-  ;; http://www.ssc.com/lg/issue29/marsden.html
-;  (kill-buffer post-buf)
+  (cond
+    ((fboundp 'server-edit)
+      (server-edit))
+    ((fboundp 'gnuserv-kill-buffer-function)
+      (gnuserv-kill-buffer-function))
+    (t
+      (save-buffers-kill-emacs)))
 )
 
 (defun post-goto-body ()
@@ -717,7 +518,7 @@ post-signature-text-face)
   (goto-char (point-min))
   ;; If the message has header, slide downward.
   (and header-mode (save-match-data (re-search-forward "^$" nil t))
-       (next-line 1)))
+       (forward-line)))
 
 (defun post-goto-signature ()
   "Go to the beginning of the message signature."
@@ -781,32 +582,62 @@ Argument END end of region."
   (interactive "r")
   (while (< start end)
     (goto-char start)
-    (insert "_")
-    (insert (char-to-string 8))
+    (insert "_" (char-to-string 8))
     (setq start (+ start 3))
     (setq end   (+ end   2))))
 
-(defun post-quote-region (beg end)
+(defun post-quote-region (beg end &optional arg)
   "Quote a region using the `post-quote-start' variable.
-Argument BEG Beginning of region to be quoted.
-Argument END End of region to be quoted."
-  (interactive "r")
-  (comment-region beg end))
+Arguments BEG and END are the beginning and end positions of the
+region to be quoted; Interactively, these are automatically set.
 
-(defun post-unquote-region (beg end)
+Use the optional prefix-argument to repeat the operation however
+many times."
+  (interactive "r\np")
+  (when (or (not arg)
+            (< arg 1))
+    (setq arg 1))
+  (while (not (zerop arg))
+    (comment-region beg end)
+    (insert "\n")
+    (forward-char -1)
+    (fill-paragraph nil (list (point) (mark)))
+    (delete-char 1)
+    (goto-char (point))
+    (setq arg (1- arg)
+          beg (point)
+          end (mark))))
+
+(defun post-unquote-region (beg end &optional arg)
   "Un-quote a region one level using the `post-quote-start' variable.
-Argument BEG Beginning of region to be quoted.
-Argument END End of region to be quoted."
-  (interactive "r")
-  (uncomment-region beg end))
+Arguments BEG and END are the beginning and end positions of the
+region to be quoted; Interactively, these are automatically set.
+
+Use the optional prefix-argument to repeat the operation however
+many times."
+  (interactive "r\np")
+  (when (or (not arg)
+            (< arg 1))
+    (setq arg 1))
+  (while (not (zerop arg))
+    (uncomment-region beg end)
+    (insert "\n")
+    (forward-char -1)
+    (fill-paragraph nil (list (point) (mark)))
+    (delete-char 1)
+    (goto-char (point))
+    (setq arg (1- arg)
+          beg (point)
+          end (mark))))
 
 ; From Dave Pearson, July 15, 2000
-(defun* split-quoted-paragraph (&optional (quote-string "> "))
+(defun split-quoted-paragraph (&optional quote-string)
   "Split a quoted paragraph at point, keeping the quote."
   (interactive)
-  (if (save-excursion
-        (beginning-of-line)
-        (looking-at (regexp-quote quote-string)))
+  (let ((quote-string (or quote-string "> ")))
+   (if (save-excursion
+         (beginning-of-line)
+         (looking-at (regexp-quote quote-string)))
       (progn
         (let ((spaces (- (point)
                          (save-excursion
@@ -815,7 +646,7 @@ Argument END End of region to be quoted."
                          (length quote-string))))
           (save-excursion
             (insert (format "\n\n%s%s" quote-string (make-string spaces ? ))))))
-    (error "Can't see a quoted paragraph here")))
+    (error "Can't see a quoted paragraph here"))))
 
 (defun post-random-signature ()
   "Randomize the signature.
@@ -838,10 +669,10 @@ the signatures in `post-variable-signature-source' must be separated by
 `post-signature-sep-regexp'."
   (interactive)
   (let ((sig nil))
-    (save-excursion
-      (set-buffer (generate-new-buffer "*Post-Select-Signature*"))
-      (insert-file post-variable-signature-source)
-      (beginning-of-buffer)
+    (with-current-buffer
+      (generate-new-buffer "*Post-Select-Signature*")
+      (insert-file-contents post-variable-signature-source)
+      (goto-char (point-min))
       ;; we have 2 lists of marks since seperators are of arbitrary lenght
       (let ((marks-st (list (point-min)))
 	    (marks-end (list))
@@ -856,8 +687,7 @@ the signatures in `post-variable-signature-source' must be separated by
 		     (nth r marks-st) (nth r marks-end))))
 	(kill-buffer (current-buffer)))
       (goto-char (post-kill-signature))
-      (insert-string "-- \n")
-      (insert sig)
+      (insert "-- \n" sig)
       (if (file-readable-p post-fixed-signature-source)
 	  (insert-file-contents post-fixed-signature-source)
 	(insert "I really need a `post-fixed-signature-source'!\n")))))
@@ -868,8 +698,9 @@ the signatures in `post-variable-signature-source' must be separated by
   (setq post-select-signature-last-buffer (current-buffer))
   (setq post-select-signature-last-point (point))
   (pop-to-buffer "*Post-Select-Signature*")
-  (insert-file post-variable-signature-source)
-  (use-local-map post-select-signature-mode-map))
+  (insert-file-contents post-variable-signature-source)
+  (use-local-map post-select-signature-mode-map)
+  (read-only-mode t))
 
 (defun post-select-signature-select-sig-from-file ()
  "*Chooses the signature the cursor is in from `post-variable-signature-source'."
@@ -893,8 +724,7 @@ the signatures in `post-variable-signature-source' must be separated by
     (let ((sig (buffer-substring-no-properties sig-start sig-end)))
       (switch-to-buffer post-select-signature-last-buffer)
       (goto-char (post-kill-signature))
-      (insert-string "-- \n")
-      (insert sig))
+      (insert "-- \n" sig))
     (if (file-readable-p post-fixed-signature-source)
 	(insert-file-contents post-fixed-signature-source))
     (post-select-signature-quit)))
@@ -908,12 +738,12 @@ the signatures in `post-variable-signature-source' must be separated by
   (list-directory (concat post-signature-directory
                           post-signature-wildcard) t)
   (pop-to-buffer "*Directory*")
-  (next-line 1)
+  (forward-line)
   (copy-to-buffer "*Post-Select-Signature*" (point) (point-max))
   (kill-buffer "*Directory*")
   (pop-to-buffer "*Post-Select-Signature*")
   (use-local-map post-select-signature-mode-map)
-  (toggle-read-only t))
+  (read-only-mode t))
 
 (defun post-select-signature-select-sig-from-dir ()
   "Set the signature in the calling buffer to the one under the cursor."
@@ -928,8 +758,8 @@ the signatures in `post-variable-signature-source' must be separated by
     (setq sig-to-load (buffer-substring-no-properties sig-start (point)))
     (switch-to-buffer post-select-signature-last-buffer)
     (goto-char (post-kill-signature))
-    (insert-string "-- \n")
-    (insert-file (concat post-signature-directory sig-to-load))
+    (insert "-- \n")
+    (insert-file-contents (concat post-signature-directory sig-to-load))
     (message "Signature set to %s%s" post-signature-directory sig-to-load)
     (post-select-signature-quit)))
 
@@ -945,7 +775,7 @@ the signatures in `post-variable-signature-source' must be separated by
   "Prompt for an attachment."
   (interactive)
   (let ((file (read-file-name "Attach file: " nil nil t nil))
-	(description (string-read "Description: ")))
+    (description (read-string "Description: " nil nil nil t)))
     (header-attach-file file description)))
 
 ;;; Non-interactive functions
@@ -964,7 +794,7 @@ the signatures in `post-variable-signature-source' must be separated by
 (defun post-body-says-attach-p ()
   "Check if attach appears in the body."
   (post-goto-body)
-  
+
   ;; Aargh it's annoying that how-many returns a string,
   ;; "13 occurences" instead of a number, 13.
   ;; As of Emacs 22 how-many returns an integer number.  Consideration
@@ -1029,22 +859,36 @@ This way they can refer back to this buffer during a compose session."
   (copy-to-buffer (get-buffer-create "*Original*")
 		  (point-min) (point-max)))
 
+;;; Mostly stolen from flyspell.el, mail-mode-flyspell-verify
+(put 'post-mode 'flyspell-mode-predicate 'post-mode-flyspell-verify)
+(defun post-mode-flyspell-verify ()
+  "This function is used for `flyspell-generic-check-word-p' in Post mode."
+  (let ((in-headers
+		 (and (save-excursion (goto-char (point-min))
+							  (re-search-forward "^$" nil t))
+			  (< (point) (match-end 0))))
+		(in-signature (save-excursion
+						(re-search-backward (concat "^" post-signature-pattern
+                                                    "[ \t\f]*$") nil t))))
+	(cond (in-headers (and (save-excursion (beginning-of-line)
+										   (looking-at "^Subject:"))
+						   (> (point) (match-end 0))))
+		  (in-signature nil)
+		  (t (save-excursion (beginning-of-line)
+							 (not (looking-at
+								   (concat "[ \t\f]*" post-quote-start))))))))
+
+(defun post-quote-newline ()
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; The Heart of Darkness
-;;;
-;;; The old post mode (i.e. Dave Pearson's) derived from mail-mode.  I
-;;; prefer deriving from text mode like mutt mode did. - RR
 (define-derived-mode post-mode text-mode "Post"
   "Major mode for composing email or news with an external agent.
-To customize it, type \\[customize] and select [Applications] [Mail] [Post].
-When you finish editing this message, type \\[post-save-current-buffer-and-exit] to save and exit Emacs.
+To customize it, type \\[customize] and select [Applications]
+[Mail] [Post]. When you finish editing this message, type
+\\[post-save-current-buffer-and-exit] to save and exit Emacs.
 
 \\{post-mode-map}"
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Neat things to do right off the bat.
 
   (auto-fill-mode (if post-uses-fill-mode 1 0))
 
@@ -1055,9 +899,10 @@ When you finish editing this message, type \\[post-save-current-buffer-and-exit]
   (make-local-variable 'paragraph-start)
   (make-local-variable 'paragraph-separate)
   (setq paragraph-start
-	"\\([ \t\n\f]+[^ \t\n\f>]\\|[ \t\f>]*$\\)"
+	(concat "\\([ \t\n\f]+[^ \t\n\f>]\\|[ \t\f>]*$\\|.+:$\\|"
+	        post-signature-pattern " *$\\)")
 	paragraph-separate
-	"[ \t\f>]*$")
+	(concat "[ \t\f>]*$\\|.+:$\\|" post-signature-pattern " *$"))
 
   ;; XEmacs needs easy-menu-add, Emacs does not care
   (easy-menu-add post-mode-menu)
@@ -1070,24 +915,28 @@ When you finish editing this message, type \\[post-save-current-buffer-and-exit]
   (make-local-variable 'backup-inhibited)
   (setq backup-inhibited t)
 
-  (if (boundp 'font-lock-defaults)
-      (make-local-variable 'font-lock-defaults))
-  (flet ((add-syntax-highlight (face regexps)
-	    (set face face)
-	    (nconc post-font-lock-keywords
-		   (loop for regexp in regexps
-			 collect (list regexp (list 0 face 't))))))
-;			 collect (list regexp `(,0 ',face))))))
-    (add-syntax-highlight 'post-emoticon-face post-emoticon-pattern)
-    (add-syntax-highlight 'post-bold-face   post-bold-pattern)
-    (add-syntax-highlight 'post-underline-face   post-underline-pattern)
-    (add-syntax-highlight 'post-url-face    post-url-pattern))
+  ;; Skip certain patterns for ispell
+  ;(set (make-local-variable 'ispell-skip-region-alist)
+  ;		(append ispell-skip-region-alist post-ispell-skip-alist))
+
+  (when (boundp 'font-lock-defaults)
+     (make-local-variable 'font-lock-defaults))
+
+  (dolist (x '((post-emoticon-face  post-emoticon-pattern)
+               (post-bold-face      post-bold-pattern)
+               (post-underline-face post-underline-pattern)
+               (post-url-face       post-url-pattern)))
+    (nconc post-font-lock-keywords
+      (mapcar
+        (lambda (regexp)
+          (list regexp (list 0 (car x) 't)))
+        (symbol-value (cadr x)))))
+
   (setq font-lock-defaults
 	'(post-font-lock-keywords nil nil nil nil
 				  (font-lock-syntactic-keywords
 				   . post-font-lock-syntactic-keywords)
 				  (font-lock-comment-face
-;				   . 'post-signature-text-face)))
 				   . post-signature-text-face)))
 
   ;; Force pwd to home directory if so required.
@@ -1097,7 +946,7 @@ When you finish editing this message, type \\[post-save-current-buffer-and-exit]
   ;; Kill quoted sig if so required.
   (cond (post-kill-quoted-sig
 	 (post-delete-quoted-signatures)
-         (not-modified)))
+         (set-buffer-modified-p nil)))
 
   ;; Remap signature selection functions according to whether the
   ;; signatures are stored in a file or directory.
@@ -1111,18 +960,10 @@ When you finish editing this message, type \\[post-save-current-buffer-and-exit]
       (defalias 'post-select-signature-select-sig
 	'post-select-signature-select-sig-from-dir)))
 
-  ;; Define mutt/slrn specific key bindings.
-  (define-key (current-local-map) "\C-c\C-b"	 'post-make-region-bold)
-  (define-key (current-local-map) "\C-c\C-u"	 'post-make-region-underlined)
-  (define-key (current-local-map) "\C-c\C-q"	 'post-quote-region)
-  (define-key (current-local-map) "\C-c\C-d\C-q" 'post-unquote-region)
-  (define-key (current-local-map) "\C-c\C-a"	 'post-attach-file)
-  (define-key (current-local-map) "\C-c\C-p"	 'post-set-return-receipt-to)
-
   ;; Give the buffer a handy name.
   (if post-rename-buffer
       (setq post-buf (rename-buffer "*Composing*" t)))
- 
+
   ;; If this is a news posting, check the length of the References field.
   (if (post-references-p)
       (header-check-references))
@@ -1186,7 +1027,7 @@ Optional argument ARG ."
       (when (re-search-forward (concat "^\\($\\|" field ": \\)"))
 	(if (looking-at "^$")
 	    (progn
-	      (insert-string field ": \n")
+	      (insert field ": \n")
 	      (forward-char -1))
 	  (header-position-on-value))))))
 
@@ -1219,8 +1060,11 @@ Argument DESCRIPTION MIME description."
 	  (widen)
 	  (goto-char (point-min))
 	  (search-forward-regexp "^$")
-	  (insert-string (concat "Attach: " (file-truename file) " "
-				 description "\n"))
+	  (insert (concat "Attach: " (replace-regexp-in-string
+                                  " "
+                                  "\\\\ "
+                                  (file-truename file)) " "
+                      description "\n"))
 	  (message (concat "Attached '" file "'."))
 	  (setq post-has-attachment t))))))
 
@@ -1281,7 +1125,7 @@ Optional argument SHOW Whether or not to display the length."
   (let* ((header "References")
          (refs (header-get-value header))
          (len (+ (length header) (length refs) 2)))
-    (if (or (interactive-p) show)
+    (if (or (called-interactively-p "any") show)
         (message "References header is %d characters in length." len))
     len))
 
@@ -1328,7 +1172,7 @@ Optional argument DEFAULT ."
     (cond ((post-find-header-line header)
 	   (beginning-of-line)
 	   (kill-line)
-	   (insert-string (concat header ": " value)))
+	   (insert header ": " value))
 	  (t
 	   (header-append-value header value))))
   (message "%s set to %s" header value))
@@ -1337,7 +1181,7 @@ Optional argument DEFAULT ."
   "Add a HEADER and set it's VALUE (if header exists, will add multiple headers)."
   (goto-char (point-min))
   (search-forward-regexp "^$" nil t)
-  (insert-string (concat header ": " value "\n")))
+  (insert header ": " value "\n"))
 
 ;;; Setup the mode map for the select-signature buffer.
 (if post-select-signature-mode-map nil
@@ -1365,6 +1209,12 @@ Optional argument DEFAULT ."
 (define-key post-mode-map "\C-c\C-q" 'post-quote-region)
 (define-key post-mode-map "\C-c\C-d\C-q" 'post-unquote-region)
 (define-key post-mode-map "\C-c\C-s" 'post-select-signature)
+(define-key post-mode-map "\C-c\C-a" 'post-attach-file)
+
+(define-key post-mode-map [remap server-edit]
+  'post-save-current-buffer-and-exit)
+(define-key post-mode-map [remap save-buffers-kill-terminal]
+  'post-save-current-buffer-and-exit)
 
 (define-key header-mode-map "\C-c\C-f\C-t" 'header-goto-to)
 (define-key header-mode-map "\C-c\C-f\C-c" 'header-goto-cc)
