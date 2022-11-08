@@ -19,58 +19,13 @@
 ;(setq inhibit-default-init t)
 (setq message-log-max 1000)
 
-;;; detect local variations
 (defun dot-emacs (relative-path)
   "Return the full path of a file in the user's emacs directory."
   (expand-file-name (concat user-emacs-directory relative-path)))
 
 (load (dot-emacs "./01-env-local"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Compatibility hacks, preferred or needed for various before
-;; loading. YMMV.
-;;
-
-;; hack for emacs crash on gtk3/x11. Maybe also set XLIB_SKIP_ARGB_VISUALS=1
-;; https://lists.gnu.org/r/bug-gnu-emacs/2018-04/msg00821.html
-;; (setq default-frame-alist
-;;       (append default-frame-alist '((inhibit-double-buffering . t))))
-
-;; Use Common Lisp. Default in XEmacs, deprecated in GNUEmacs. I think
-;; RMS is wrong on this.
-(if (not +running-xemacs+) (require 'cl))
-
-;; compatibility with XEmacs, from Lucid Emacs
-;; I use this in myskeleton-pairs below...
-(if (not +running-xemacs+)
-    (defun event-key (event)
-      "Returns the KeySym of the given key-press event.
-The value is an ASCII printing character (not upper case) or a symbol."
-      (if (symbolp event)
-          (car (get event 'event-symbol-elements))
-        (let ((base (logand event (1- (lsh 1 18)))))
-          (downcase (if (< base 32) (logior base 64) base))))))
-
-;; Not defined in Emacs < 21.3.
-(unless (commandp 'find-library)
-  (defun find-library (library)
-    "Open LIBRARY."
-    (interactive "sLibrary: ")
-    (let ((filename (locate-library (concat library ".el"))))
-      (if (stringp filename)
-          (find-file filename)
-        (message "Library %s not found." library)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun add-to-load-path (path-string)
-  "append path to loadpath"
-  (message (format "Passed %S..." path-string))
-  (if (stringp path-string)
-      (when (file-exists-p path-string)
-        (message (format "Adding %S to load-path..." path-string))
-        (add-to-list 'load-path (expand-file-name path-string)))))
+(load (dot-emacs "./02-compat"))
+(load (dot-emacs "./03-helpers"))
 
 (let ((my-path-list (cond ((or +is-employer-host+
 			       +running-osx+
@@ -81,14 +36,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
   (dolist (p my-path-list) (add-to-load-path (concat +local-elisp-subpath+ p))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; some useful local functions, moved to their own file
-;;
 (message "... defining local functions and customizations...")
 (load-file (concat +local-elisp-subpath+ "/misc/lazycat.el"))
-
-
 
 ;; my conveniences
 (require 'rel-lib)
@@ -96,7 +45,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (require 'rel-borrowed-snippets)
 (require 'rel-ivy)
 
-;;
 (add-to-list 'auto-mode-alist '("\\.zsh\\'" . sh-mode))
 
 ;; Org Mode, proving to be better than planner
@@ -120,11 +68,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
       (global-set-key [(control x)(meta j)]   'bc-list)           ;; C-x M-j for the bookmark menu list
       (message "configured breadcrumb"))
   (message "failed to load breadcrumb"))
-
-;; more convenient buffer switching, 
-;;(require 'iswitchb)
-;;(iswitchb-mode t)
-;;(setq iswitchb-case t)
 
 ;; smarter buffer naming
 (if (load "uniquify" t)
@@ -173,10 +116,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 ;; TeX-isms
 
-;;(when (and +running-osx+ (>= 23 emacs-major-version))
-  ; Oddly, macports emacs.app doesn't find the auctex port. Tell it where to look.
-;;  (add-to-load-path "/Applications/MacPorts/Emacs.app/Contents/Resources/lisp/auctex"))
-
 (load "tex-site" t)
 (setq TeX-auto-save t
       TeX-parse-self t
@@ -200,10 +139,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
   '(progn
      (require 'magit)
      (require 'magit-gitflow)
-     (setq magit-git-executable
-	   (cond (+is-employer-host+ "git")
-		 (+running-osx+ "/opt/local/bin/git")
-		 (t "git")))
+     (setq magit-git-executable "git")
      (setq magit-revert-item-confirm t)
      (add-hook 'magit-mode-hook 'turn-on-magit-gitflow)))
 (global-set-key (kbd "C-c s s") 'magit-status)
@@ -336,103 +272,12 @@ The value is an ASCII printing character (not upper case) or a symbol."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; custom key bindings
-;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; OSX map the extra keys for something useful
-;;
-(when +running-osx+
-  (setq mac-function-modifer 'super)
-  (setq mac-option-modifier 'hyper)
-  (setq mac-command-key-is-meta t))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;
-;; Function keys should do something too
-;;
-;;(global-set-key [f1] (lambda () (interactive) (manual-entry (current-word))))
-;;(global-set-key [f2] 'undo)
-;;(global-set-key [M-f2] 'redo)
-(global-set-key [f3] 'org-agenda)
-(global-set-key [f4] 'rel-comment-line-or-region)
-(global-set-key [f5] 'rel-uncomment-line-or-region)
-;;(global-set-key [f6] 'switch-to-previous-buffer)
-;;(global-set-key [f7] 'switch-to-next-buffer)
-(global-set-key [f10] 'next-error)
-
-;;
-;; Finger memory, I need these to jump around
-;;
-(global-set-key "\C-cg" 'goto-line)
-(global-set-key "\C-cG" 'goto-char)
-(global-set-key "\M-g"  'goto-line)
-
-;; alternative prefix for 60%-size keyboard lacking <ESC>
-(global-set-key  (kbd "C-`") (lookup-key (current-global-map) (kbd "ESC")))
-
-;; smart delete, kill region or char
-(global-set-key "\C-d" 'smart-delete)
-
-;; comment/uncomment so useful, I set it twice
-(global-set-key (kbd "C-c c") 'rel-comment-line-or-region)
-(global-set-key (kbd "C-c u") 'rel-uncomment-line-or-region)
-(global-set-key (kbd "C-S-v") 'scroll-down)
-;;
-
-(global-set-key "%" 'match-paren) ; vi-ism lives
-(global-set-key (kbd "C-x I")   'insert-buffer)
-(global-set-key (kbd "C-c f t") 'tidy-buffer)
-(global-set-key (kbd "C-c f p") 'perltidy-buffer)
-(global-set-key (kbd "C-C f @") 'rel-toggle-fill-modes)
-(global-set-key (kbd "C-c f f") 'rel-autoformat)
-(global-set-key (kbd "C-c f q") 'rel-autoformat-quote)
-(global-set-key (kbd "C-x !") 'rel-whack)
-(define-key ctl-x-map "F" 'find-function)
-(define-key ctl-x-map "V" 'find-variable)
-(global-set-key [delete] 'delete-char)
-(global-set-key [kp-delete] 'delete-char)
-
-;; sorting variously, mnemonic is "C-c sort on <kind of sort>"
-(global-set-key (kbd "C-c s o c")   'sort-columns)
-(global-set-key (kbd "C-c s o f")   'sort-fields)
-(global-set-key (kbd "C-c s o l")   'sort-lines)
-(global-set-key (kbd "C-c s o n f") 'sort-numeric-fields)
-(global-set-key (kbd "C-c s o r f") 'sort-regexp-fields)
-(global-set-key (kbd "C-c s o r r") 'reverse-region)
-
-;; Wiegley's timeclock
-(define-key ctl-x-map "ti" 'timeclock-in)
-(define-key ctl-x-map "to" 'timeclock-out)
-(define-key ctl-x-map "tc" 'timeclock-change)
-(define-key ctl-x-map "tr" 'timeclock-reread-log)
-(define-key ctl-x-map "tu" 'timeclock-update-mode-line)
-
-;; Steve Yegge's advice
-(global-set-key "\C-x\C-m" 'execute-extended-command)
-(global-set-key "\C-c\C-m" 'execute-extended-command)
-;(global-set-key "\C-w" 'backward-kill-word)
-;(global-set-key "\C-x\C-k" 'kill-region)
-;(global-set-key "\C-c\C-k" 'kill-region)
-
-(message "... keybindings...")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+(load (dot-emacs "05-keybindings"))
 
 ;;
 ;; misc
 ;;
 (fset 'yes-or-no-p 'y-or-n-p)
-
-;; OSX, need this on Carbon Emacs
-(when +running-osx+
-    (progn (set-cursor-color "white")
-           (setq x-select-enable-clipboard t)))
 
 (setq-default indent-tabs-mode nil)
 
@@ -461,7 +306,7 @@ The value is an ASCII printing character (not upper case) or a symbol."
  toolbar-visible-p nil
  uniquify-buffer-name-style 'forward   ; unique buffer names w/dir
  user-full-name "Ross Lonstein"
- user-mail-address "rlonstein@datapipe.com"
+ user-mail-address "ross@lonsteins.com"
  visible-bell t                        ; no beeping
  yank-excluded-properties t            ; don't paste properties
  transient-mark-mode t
@@ -469,27 +314,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
  apropos-do-all t)
 
 (blink-cursor-mode 1)
-
-(when +running-osx+
-  (setq sql-postgres-program "/Library/PostgreSQL/8.3/bin/psql"))
-
-;
-; Set GNUs particulars
-;
-(setq nntp-maximum-request 10)
-(setq nntp-connection-timeout 5)
-(setq nntp-warn-about-losing-connection t)
-(setq gnus-summary-same-subject "")
-(setq gnus-sum-thread-tree-root "")
-(setq gnus-sum-thread-tree-single-indent "")
-(setq gnus-sum-thread-tree-leaf-with-other "+-> ")
-(setq gnus-sum-thread-tree-vertical "|")
-(setq gnus-sum-thread-tree-single-leaf "`-> ")
-
-
-;(require 'icomplete)
-;(icomplete-mode 1)
-
 
 ; No scrollbar, no menu, no tools. Screen real estate is precious
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
@@ -592,21 +416,11 @@ The value is an ASCII printing character (not upper case) or a symbol."
   (if (null (x-list-fonts font))
       nil t))
 
-(if (and +running-osx+ (not (null window-system)))
-    (let ((preferred-font
-           (if +running-carbon-emacs+ "-apple-Envy code r-medium-r-normal--13-130-72-72-m-130-iso10646-1"
-             "-apple-Akkurat_Mono-medium-normal-normal-*-12-*-*-*-m-0-fontset-auto7")))
-      (when (font-existp preferred-font)
-        (progn
-          (set-face-font 'default preferred-font)
-          (message "... set OSX default face to [%s]..." preferred-font)))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (if +running-xemacs+ (gnuserv-start)
   (server-start))
 
-(if +running-osx+
-    (set-variable 'magit-emacsclient-executable "/Applications/MacPorts/Emacs.app/Contents/MacOS/bin/emacsclient"))
 
 (put 'narrow-to-region 'disabled nil)
 
@@ -677,13 +491,6 @@ The value is an ASCII printing character (not upper case) or a symbol."
 ;; python
 ;;(add-hook 'python-mode-hook 'jedi:setup)
 
-; maybe fix OSX iTerm2/Emacs keys
-(define-key input-decode-map "\e[1;5A" [C-up])
-(define-key input-decode-map "\e[1;5B" [C-down])
-(define-key input-decode-map "\e[1;5C" [C-right])
-(define-key input-decode-map "\e[1;5D" [C-left])
-
-
 ;; jq-mode
 (with-eval-after-load "json-mode"
   (define-key json-mode-map (kbd "C-c C-j") #'jq-interactively))
@@ -717,8 +524,8 @@ The value is an ASCII printing character (not upper case) or a symbol."
 (when debug-on-error
   (setq debug-on-error nil))
 
-(require 'darcula-theme)
-(load-theme 'darcula t)
+;(require 'darcula-theme)
+;(load-theme 'darcula t)
 
 (message "Completed load of Ross's customizations.")
 
