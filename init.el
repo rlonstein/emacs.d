@@ -44,6 +44,7 @@
 (require 'rel-conveniences)
 (require 'rel-borrowed-snippets)
 (require 'rel-ivy)
+(require 'rel-rust)
 
 (add-to-list 'auto-mode-alist '("\\.zsh\\'" . sh-mode))
 
@@ -438,7 +439,7 @@
    '(("melpa" . "https://melpa.org/packages/")
      ("gnu" . "https://elpa.gnu.org/packages/")))
  '(package-selected-packages
-   '(ecb flycheck-d-unittest flycheck-elixir flycheck-golangci-lint flycheck-nim flycheck-pycheckers flycheck-pyflakes flymake-go flymake-json flymake-perlcritic go-dlv go-eldoc jq-mode js2-mode magit magit-gitflow marginalia nim-mode org ox-gfm protobuf-mode python-mode rust-mode rustic semi slime urlenc yaml cargo cargo-mode clang-format cmake-mode company-ctags company-go company-irony company-shell d-mode darcula-theme dfmt yasnippet yaml-mode web-mode use-package-ensure-system-package use-package-el-get tramp realgud projectile mmm-mode json-mode highlight-escape-sequences flycheck-rust flycheck-irony flycheck-dmd-dub flycheck-clojure filladapt eldoc counsel company auctex ag))
+   '(lsp-ui lsp-mode ecb flycheck-d-unittest flycheck-elixir flycheck-golangci-lint flycheck-nim flycheck-pycheckers flycheck-pyflakes flymake-go flymake-json flymake-perlcritic go-dlv go-eldoc jq-mode js2-mode magit magit-gitflow marginalia nim-mode org ox-gfm protobuf-mode python-mode rust-mode rustic semi slime urlenc yaml cargo cargo-mode clang-format cmake-mode company-ctags company-go company-irony company-shell d-mode darcula-theme dfmt yasnippet yaml-mode web-mode use-package-ensure-system-package use-package-el-get tramp realgud projectile mmm-mode json-mode highlight-escape-sequences flycheck-rust flycheck-irony flycheck-dmd-dub flycheck-clojure filladapt eldoc counsel company auctex ag))
  '(safe-local-variable-values
    '((cider-refresh-after-fn . "integrant.repl/resume")
      (cider-refresh-before-fn . "integrant.repl/suspend")))
@@ -518,14 +519,16 @@
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 (projectile-mode +1)
 
+(if (display-graphic-p)
+    (progn 
+      (require 'darcula-theme)
+      (load-theme 'darcula t)))
+
 ;;; and we're done...
 (garbage-collect)
 
 (when debug-on-error
   (setq debug-on-error nil))
-
-;(require 'darcula-theme)
-;(load-theme 'darcula t)
 
 (message "Completed load of Ross's customizations.")
 
