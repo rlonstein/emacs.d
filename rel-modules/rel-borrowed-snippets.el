@@ -182,6 +182,23 @@
       (setq buffer (car list))))
   (message "Refreshed open files"))
 
+; from Stefan Kamphausen on emacswiki, automatically
+; set executable bit on saved files from buffers with
+; a hashbang on the first line.
+;
+(add-hook 'after-save-hook
+          #'(lambda ()
+              (and (save-excursion
+                     (save-restriction
+                       (widen)
+                       (goto-char (point-min))
+                       (save-match-data
+                         (looking-at "^#!"))))
+                   (not (file-executable-p buffer-file-name))
+                   (shell-command (concat "chmod u+x " (shell-quote-argument buffer-file-name)))
+                   (message
+                    (concat "Saved as script: " buffer-file-name)))))
+
 (provide 'rel-borrowed-snippets)
 
 

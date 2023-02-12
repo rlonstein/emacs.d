@@ -181,4 +181,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 "))
 
+(defun font-existp (font)
+  (if (null (x-list-fonts font))
+      nil t))
+
 (provide 'rel-lib)

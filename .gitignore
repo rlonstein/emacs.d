@@ -1,5 +1,4 @@
 ._*
-
 eshell
 irony
 auto-save-list
@@ -9,3 +8,5 @@ elpa
 projectile-bookmarks.eld
 network-security.data
 .python-environments
+straight/
+racket-mode/
