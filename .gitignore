@@ -10,3 +10,4 @@ network-security.data
 .python-environments
 straight/
 racket-mode/
+eln-cache
