@@ -62,7 +62,10 @@
 (straight-use-package 'lsp-ui)
 (straight-use-package 'yaml-mode)
 (straight-use-package 'rust-mode)
-(straight-use-package 'rustic)
+(straight-use-package '(rustic
+			:type git
+			:host github
+			:repo "brotzeit/rustic"))
 (straight-use-package 'cargo)
 (straight-use-package 'cargo-mode)
 (straight-use-package 'python-mode)
@@ -114,9 +117,10 @@
 (require 'rel-org-config)
 (require 'rel-rust)
 
+(require 'filladapt)
 (require 'post)
 (setq auto-mode-alist
-      (cons '("/tmp/mutt.*$" . postmode) auto-mode-alist))
+      (cons '("/tmp/mutt.*$" . post-mode) auto-mode-alist))
 (add-hook 'post-mode-hook 'turn-on-filladapt-mode)
 
 ;; footnotes

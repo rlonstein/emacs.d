@@ -2,6 +2,10 @@
 ;;
 
 (use-package rustic
+  :straight '(rustic
+	      :type git
+	      :host github
+	      :repo "brotzeit/rustic")
   :ensure
   :bind (:map rustic-mode-map
               ("M-j" . lsp-ui-imenu)
