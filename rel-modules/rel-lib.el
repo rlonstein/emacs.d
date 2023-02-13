@@ -119,13 +119,13 @@
     (let ((start (point)))
       (cond
        ((region-exists-p)                 ; kill region
-        (rel-elide-lines (point) (mark)))
+        (rel-elide-lines (point) (mark)) t)
        ((re-search-forward "^--" nil t)   ; kill to sig
         (forward-line -1)
         (rel-elide-lines start (point) t))
        (t                                 ; kill next paragraph
         (forward-paragraph)
-        (rel-elide-lines start (point)))))))
+        (rel-elide-lines start (point)) t)))))
 
 (defun rel-elide-lines (start end &optional nocount)
   "Delete region then insert an elision comment, optionally noting the number of lines"
