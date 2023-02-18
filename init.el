@@ -156,7 +156,7 @@
 
 ;; ibuffer is better
 (autoload 'ibuffer "ibuffer" "List Buffers." t)
-(global-set-key (kbd "C-x C-b") 'buffer)
+(global-set-key (kbd "C-x C-b") 'ibuffer)
 (setq ibuffer-expert t)
 (add-hook 'ibuffer-mode-hook '(lambda () (ibuffer-auto-mode 1)))
 
